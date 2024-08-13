@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h4 class="mb-4">Log in</h4>
+
+<form method="post">
+    {% csrf_token %}
+    <label for="login_email">Email:</label>
+    <input type="email" id="login_email" name="login_email" required><br><br>
+    <label for="login_password">Password:</label>
+    <input type="password" id="login_password" name="login_password" required><br><br>
+    <button type="submit">Log in</button>
+</form>
+{% endblock %}

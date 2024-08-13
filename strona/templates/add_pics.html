@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h4 class="mb-4">Upload Image {{ next_upload_count }} of {{ number_of_choices }}</h4>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Upload</button>
+</form>
+
+
+<p>Uploaded {{ upload_count }} out of {{ number_of_choices }} images.</p>
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-info">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+{% endblock %}

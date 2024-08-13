@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-info">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+<h1>{{ game_data.title }}</h1>
+<p>{{ game_data.description }}</p>
+<<<<<<< HEAD
+{% if user_name %}
+  <form method="post" action="{% url 'show_game' game_id %}">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="button_play">
+      <button type="submit">Play</button>
+  </form>
+{% else %}
+  <p> Log in to play this game </p>
+{% endif %}
+=======
+
+<form method="post" action="{% url 'show_game' game_id %}">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="button_play">
+    <button type="submit">Play</button>
+</form>
+
+>>>>>>> 3fa940845950fc271f6f52d444f61249d1e59ed1
+{% endblock %}

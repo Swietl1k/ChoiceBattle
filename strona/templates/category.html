@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-info">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+
+<h1>Games from {{ category }}</h1>
+
+{% if games %}
+  <ul>
+    {% for game in games %}
+      <li>
+        <a href='/strona/show_game/{{game.game_id}}'><strong>Game ID:</strong> {{ game.game_id }}</a><br>
+        <strong>Title:</strong> {{ game.title }}<br>
+        <strong>Description:</strong> {{ game.description }}<br>
+        <strong>Number of Choices:</strong> {{ game.number_of_choices }}<br>
+        <strong>Date:</strong> {{ game.date }}<br>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+<p>No games found in the selected category.</p>
+{% endif %} 
+
+{% endblock %}

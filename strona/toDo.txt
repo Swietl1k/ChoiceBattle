@@ -1,0 +1,2 @@
+block access from typing in url
+make img_list and winner_list the same thing 

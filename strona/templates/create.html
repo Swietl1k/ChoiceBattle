@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-info">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+    <div class="container mt-4">
+        <h4 class="mb-4">Create a game</h4>
+
+        <!-- Form for creating a game -->
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="game_title" class="form-label">Title:</label>
+                {{ form.title }}
+            </div>
+            <div class="mb-3">
+                <label for="game_description" class="form-label">Description:</label>
+                {{ form.description }}
+            </div>
+            <div class="mb-3">
+                <label for="number_of_choices" class="form-label">Number of choices:</label>
+                {{ form.number_of_choices }}
+            </div>
+            <div class="mb-3">
+                <label for="category" class="form-label">Choose a category:</label>
+                {{ form.category }}
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+{% endblock %}
