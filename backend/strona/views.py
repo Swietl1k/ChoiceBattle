@@ -1,4 +1,5 @@
 import time
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from firebase_admin import auth
@@ -24,7 +25,21 @@ auth = firebase.auth()
 db = firebase.database()
 storage = firebase.storage()
 
+def main_page(request):
+    username = request.session.get('user_name')
+
+    if request.method == 'POST':
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            category = form.cleaned_data['category']
+            return redirect('find_category', category=category)
+        
+    else:
+        form = CategoryForm()
  
+    return render(request, 'mainPage.html', {'user_name': username, "form": form})
+
+
 def login_navbar(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -61,21 +76,6 @@ def logout(request):
 
     messages.success(request, 'Logged out successfully.')
     return redirect('mainpage')
- 
- 
-def mainpage(request):
-    username = request.session.get('user_name')
-
-    if request.method == 'POST':
-        form = CategoryForm(request.POST)
-        if form.is_valid():
-            category = form.cleaned_data['category']
-            return redirect('find_category', category=category)
-        
-    else:
-        form = CategoryForm()
- 
-    return render(request, 'mainPage.html', {'user_name': username, "form": form})
  
  
 def register(request):

@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
+    
     <head>
         <meta charset="utf-8">
-        <title>Page swietl1kl</title>
+        <title>Main page</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.1.3/dist/darkly/bootstrap.min.css" integrity="sha256-VZi/r/RC1MritcGE2Yyxb/ACi8WIOj1Y7BHuslF8+6I=" crossorigin="anonymous">
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
@@ -16,13 +17,13 @@
             }
         </style>
     </head>
+    
     <body>
         <nav class="navbar navbar-expand-xl navbar-dark bg-primary">
             <div class="container">
-                <a class="navbar-brand" href="/strona/mainpage">NazwaFajna</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+                
+                <a class="navbar-brand" href="/strona/mainpage">Main page</a>
+                
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0" id="menu-buttons">
                         
@@ -43,17 +44,22 @@
                         </li>
                         
                     </ul>
+                    
                     {% if user_name %}
+                    
                     <div class="row d-flex">
                         Witaj {{ user_name }} ! 
                     </div>
+                    
                     <div>
                         <form action="{% url 'logout' %}" method="POST" style="display:inline;">
                             {% csrf_token %}
                             <button class="btn btn-warning" type="submit" style="width: 120px;">Log out</button>
                         </form>                    
                     </div>
+                    
                     {% else %}
+                    
                     <form action="{% url 'login_navbar' %}" method="POST" class="row d-flex">
                         {% csrf_token %}
                         <div class="col-auto pt-2 pt-sm-0" style="padding-right: 0px;">
@@ -66,6 +72,7 @@
                             <button class="btn btn-info" type="submit" style="width: 120px;">Log in</button>
                         </div>
                     </form>
+                    
                     {% endif %}
                 </div>
             </div>
@@ -73,17 +80,10 @@
 
         <div class="p-5 rounded" style="background-color: rgb(40, 42, 50); margin-bottom: 2rem;">
             <div class="container">
-<<<<<<< HEAD
                 <h1 class="display-4">Tournament games</h1>
                 <p class="lead">Create and play games.</p>
                 <hr class="my-4">
-                <p>Built using Django :)</p>
-=======
-                <h1 class="display-4">Public blog</h1>
-                <p class="lead">Write any article and share your knowledge with others.</p>
-                <hr class="my-4">
-                <p>Built using PHP :)</p>
->>>>>>> 3fa940845950fc271f6f52d444f61249d1e59ed1
+                <p>Built using Django</p>
             </div>
         </div>
 
@@ -92,10 +92,12 @@
             {% endblock %}
         </div>
 
-        <footer class="footer mt-auto py-3" style="background-color: rgb(25, 25, 25);">
+        <footer class="footer mt-auto py-3" style="background-color: rgb(25, 25, 25); width: 100%; bottom: 0; position: fixed">
             <div class="container">
                 <span class="text-muted">Made by me.</span>
             </div>
         </footer>
+    
     </body>
+
 </html>
