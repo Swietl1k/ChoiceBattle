@@ -53,13 +53,13 @@ def login_navbar(request):
             request.session['user_email'] = email
             request.session['user_name'] = username
             messages.success(request, 'Logged in successfully.')
-            return redirect('mainpage')
+            return redirect('main_page')
         
         except Exception as e:
             messages.error(request, 'Invalid credentials, please try again.')
-            return redirect('mainpage')
+            return redirect('main_page')
         
-    return redirect('mainpage')
+    return redirect('main_page')
  
 
 def logout(request):
@@ -75,7 +75,7 @@ def logout(request):
         pass
 
     messages.success(request, 'Logged out successfully.')
-    return redirect('mainpage')
+    return redirect('main_page')
  
  
 def register(request):
@@ -107,7 +107,7 @@ def register(request):
             request.session['user_name'] = username
             db.child("users").child(user_id).child("username").set(username)
             messages.success(request, 'Account registered successfully.')
-            return redirect('mainpage')
+            return redirect('main_page')
         
         except Exception as e:
             messages.error(request, str(e))
@@ -131,7 +131,7 @@ def login(request):
             request.session['user_name'] = username
             request.session['user_email'] = email
             messages.success(request, 'Account logged in.')
-            return redirect('mainpage')
+            return redirect('main_page')
         
         except Exception as e:
             print(f"error", e)
@@ -187,14 +187,14 @@ def add_pics(request, game_id):
     if not request.session.get(f'can_add_pics_{game_id}', False):
         messages.error(request, "Access this page only after submiting initial game data")
         request.session.pop(f'can_add_pics_{game_id}', None)
-        return redirect('mainpage')
+        return redirect('main_page')
 
     username = request.session.get('user_name')
     game = db.child("games").child(game_id).get().val()
 
     if not game:
         messages.error(request, "Invalid game ID.")
-        return redirect('mainpage')
+        return redirect('main_page')
  
     number_of_choices = game.get('number_of_choices', 0)
     current_upload_count = request.session.get(f'upload_count_{game_id}', 0)
@@ -225,7 +225,7 @@ def add_pics(request, game_id):
                     messages.success(request, "All images uploaded successfully!")
                     request.session.pop(f'can_add_pics_{game_id}', None)
                     request.session.pop(f'upload_count_{game_id}', None)
-                    return redirect('mainpage')
+                    return redirect('main_page')
                 
             except Exception as e:
                 messages.error(request, f"Error uploading image: {str(e)}")
@@ -262,7 +262,7 @@ def find_category(request, category):
 
     else:
         messages.error(request, "Error accessing database")
-        return redirect('mainpage')
+        return redirect('main_page')
 
     return render(request, 'category.html', {'user_name': username, "category": category, "games": games})
 
