@@ -1,9 +1,10 @@
 .list-group {
     margin-top: 100px;
-    margin-left: 250px;
+    margin-left: 10%;
     width: 22%;
     max-width: 600px;
     border-radius: 35px !important;
+    float: left;
   }
 
   .list-group-item {

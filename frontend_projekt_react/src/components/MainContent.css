@@ -1,0 +1,10 @@
+.main-content-container{
+    margin-top: 100px;
+    margin-left: 5%;
+    width: 50%;
+    float: left;
+}
+
+.card-img-top{
+    height: 200px !important;
+}
