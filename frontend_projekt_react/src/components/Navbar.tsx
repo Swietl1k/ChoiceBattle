@@ -45,7 +45,7 @@ function Navbar({ items }: Props) {
               </a>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="#">
+              <a className="nav-link" href="/login">
                 <i className="bi bi-box-arrow-in-right"></i> Login
               </a>
             </li>
