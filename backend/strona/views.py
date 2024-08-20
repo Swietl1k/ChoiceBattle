@@ -1,14 +1,24 @@
 import time
+import pyrebase
+import random, string
+import requests
+
 from django.http import HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from firebase_admin import auth
-import pyrebase
-from .forms import *
-import random, string
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from .forms import *
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
  
+
+
+
+
 config={
     "apiKey": "AIzaSyC2Jg3HI7jpGeukh0EgXmrb11GbBBnWMTQ",
     "authDomain": "stronaww123.firebaseapp.com",
@@ -17,6 +27,7 @@ config={
     "storageBucket": "stronaww123.appspot.com",
     "messagingSenderId": "358939997824",
     "appId": "1:358939997824:web:73bef249ea412d35f31865",
+#    "serviceAccount": "stronaww123-firebase-adminsdk-i25oq-82ae8cdb50.json"
 #    measurementId: "G-PE8N920P01"
 }
  
@@ -68,14 +79,21 @@ def logout(request):
         request.session.pop('user_id', None)
         request.session.pop('user_email', None)
         request.session.pop('user_name', None)
-        print("User logged out successfully")
+        
+        return Response({
+            "success": True,
+            "message": "LOGGED OUT SUCCESSFULLY"
+        }, status=status.HTTP_200_OK)
 
     except KeyError as e:
-        print("Error while logging out:", e)
-        pass
+        
+        return Response({
+            "success": False,
+            "message":"LOGOUT ERROR"
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 
-    messages.success(request, 'Logged out successfully.')
-    return redirect('main_page')
+    
  
  
 def register(request):
@@ -115,29 +133,44 @@ def register(request):
         
     return render(request, 'register.html', {'user_name': username})
  
-
+@api_view(['POST']) # this line gives the same effect as: if request.method == "POST"; login() function accepts only requests with POST method
 def login(request):
     username = request.session.get('user_name')
-    
-    if request.method == 'POST':
-        email = request.POST.get('login_email')
-        password = request.POST.get('login_password')
+    request_body = request.data
+    typ = type(request_body)
 
-        try:
-            user = auth.sign_in_with_email_and_password(email, password)
-            user_id = user['localId']
-            username = db.child("users").child(user_id).child("username").get().val()
-            request.session['user_id'] = user_id
-            request.session['user_name'] = username
-            request.session['user_email'] = email
-            messages.success(request, 'Account logged in.')
-            return redirect('main_page')
+    request_body = {key.lower(): value for key, value in request_body.items()}
+
+    email = request_body.get('email')
+    password = request_body.get('password')
+    
+    if not email or not password:
+        return Response({
+            "success": False,
+            "message": "EMAIL AND PASSWORD KEYS ARE REQUIRED",            
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        auth_response = auth.sign_in_with_email_and_password(email, password)
+        user_id = auth_response['localId']
+        username = db.child("users").child(user_id).child("username").get().val()
         
-        except Exception as e:
-            print(f"error", e)
-            return redirect('login')
+        request.session['user_id'] = user_id
+        request.session['user_name'] = username
+        request.session['user_email'] = email
         
-    return render(request, 'login.html', {'user_name': username})
+        return Response({
+            "success": True,
+            "message": "LOGGED IN SUCCESSFULLY"
+        }, status=status.HTTP_200_OK) 
+        
+    except requests.exceptions.HTTPError as e:
+        
+        return Response({
+            "success": False,
+            "error": "INVALID LOGIN CREDENTIALS",
+        }, status=status.HTTP_400_BAD_REQUEST)
+        
  
  
 def create(request):
@@ -418,3 +451,51 @@ def play(request, game_id):
     title2 = db.child("games").child(game_id).child("choice_data").child(img2_number).child("title").get().val()
     
     return render(request, 'play.html', {'user_name': username, 'img1': img1, 'img2': img2, 'title1': title1, 'title2': title2, 'game_data': game_data, 'game_id': game_id })
+
+
+'''
+
+
+
+WEB_API_KEY = 'AIzaSyC2Jg3HI7jpGeukh0EgXmrb11GbBBnWMTQ'
+
+# Create your views here.
+
+@api_view(['POST'])
+def api_main(request, *args, **kwargs):
+    get = request.GET
+    body = request.body
+    headers = request.headers
+    content_type = request.content_type
+    
+    data = {}
+    try:
+        data = json.loads(body)
+    except:
+        pass
+    
+    data['get'] = dict(get)
+    data['headers'] = dict(headers)
+    data['content_type'] = content_type
+
+    print('data: ', data)
+    print('Body: ', body)
+    print('GET: ', get)
+    print('Headers: ', headers)
+    return Response(data)
+
+@api_view(['POST'])
+def sign_up_user(request, *args, **kwargs):
+    request_body = request.data
+    print(request_body)
+
+    firebase_endpoint = f'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={WEB_API_KEY}'
+    
+    
+    response = requests.post(firebase_endpoint, json=request_body)
+
+    json_reponse = response.json()
+    
+
+    return Response(json_reponse)
+'''
