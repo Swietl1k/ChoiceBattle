@@ -2,9 +2,11 @@ import {useState} from "react";
 import Navbar from "../components/Navbar";
 import { Link } from "react-router-dom";    
 import { FaUser, FaEye, FaEyeSlash } from "react-icons/fa";
-import "./Login.css";
+import { IoMail } from "react-icons/io5";
+import "./SignUp.css";
 
-function Login () {
+
+function SignUp () {
     const [showPassword, setShowPassword] = useState(false);
 
     const togglePasswordVisibility = () => {
@@ -15,14 +17,18 @@ function Login () {
         <>
             <Navbar items={["Home", "Highlights", "Create"]} />
             <div className="container">
-                <div className="lo-header">
-                    <div className="text">Sign In</div>
+                <div className="su-header">
+                    <div className="text">Sign Up</div>
                     <div className="underline"></div>
                 </div>  
-                <div className="lo-inputs">
+                <div className="su-inputs">
                     <div className="input">
                         <input type="text" placeholder="Username" required/>
                         <FaUser className="icon"/>   
+                    </div>
+                    <div className="input">
+                        <input type="email" placeholder="Email" required/>
+                        <IoMail className="icon"/>
                     </div>
                     <div className="input">
                         <input type={showPassword ? "text" : "password"} placeholder="Password" required/>
@@ -31,12 +37,11 @@ function Login () {
                         </div>
                     </div>
                 </div>
-                <label className="remember-me"><input type="checkbox" />Remember me</label>
-                <button className="lo-submit" type="submit">Login</button>
-                <div className="login">Don't have an account? <Link to="/sign-up"><span>Register!</span></Link></div>
+                <button className="su-submit" type="submit">Create account</button>
+                <div className="login">Already have an account? <Link to="/login"><span>Click here!</span></Link></div>
             </div>
         </>    
     )
 }
 
-export default Login;
+export default SignUp;

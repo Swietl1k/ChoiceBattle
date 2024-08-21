@@ -1,0 +1,116 @@
+.container{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: #C0C0C0;
+    margin-top: 10vh !important;
+    margin-bottom: 10vh !important;
+    width:40vw !important;
+    height:100vh-100px;
+    border-radius: 10px;
+}
+
+.lo-header{
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 3vh;
+    width: 100%;
+    margin-top: 3vh;
+}
+
+.underline {
+    width: 25vw;
+    height: 0.5vh;
+    background: #3a3a3a;
+    border-radius: 10px;
+}
+
+.text {
+    font-size: 48px;
+    font-weight: 700;
+}
+
+.lo-inputs{
+    display: flex;
+    flex-direction: column;
+    gap: 3vh;
+    margin-top: 3vh;
+}
+
+.input {
+    display: flex;
+    align-items: center;
+    margin: auto;
+    width:30vw;
+    height:10vh;
+    background:#5A5A5A;
+    border-radius: 15px;
+    border: 5px solid #3a3a3a;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin: 1vh auto; 
+    width: 29vw; 
+}
+
+.input .icon {
+    display:flex;
+    margin: 0vh 1.5vw;
+    font-size: 40px;
+}
+
+.input .eye-icon{
+    display:flex;
+    margin: 0vh 1.2vw;
+    font-size: 40px;
+    cursor: pointer;
+}
+
+
+.input input{
+    width:28vw;
+    height:8vh;
+    background: transparent;
+    margin-left: 1.5vw;
+    border: none;
+    outline: none;
+    color: white;
+    font-size: 20px;
+}
+
+.lo-submit {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 24vw;
+    height: 9vh;
+    color: white;
+    background: #3a3a3a;
+    border-radius: 50px;
+    font-size: 30px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-bottom: 3.5vh;
+    margin-top:4vh;
+}
+
+.lo-submit:hover {
+    background-color: #009860; 
+    transform: scale(1.05); 
+}
+
+.login {
+    margin-bottom: 1.5vh;
+    font-size: 14px;
+}
+
+.login span{
+    color:#ce06bd;
+    cursor: pointer;
+}

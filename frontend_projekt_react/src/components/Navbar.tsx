@@ -40,7 +40,7 @@ function Navbar({ items }: Props) {
           </form>
           <ul className="navbar-nav navbar-right">
             <li className="nav-item">
-              <a className="nav-link" href="#">
+              <a className="nav-link" href="/sign-up">
                 <i className="bi bi-person"></i> Sign Up
               </a>
             </li>
