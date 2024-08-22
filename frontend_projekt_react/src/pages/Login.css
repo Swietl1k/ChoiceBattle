@@ -96,9 +96,9 @@
     font-weight: 700;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin-bottom: 3.5vh;
-    margin-top:4vh;
+    margin: 4vh auto 3.5vh auto;
 }
+
 
 .lo-submit:hover {
     background-color: #009860; 

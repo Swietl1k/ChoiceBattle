@@ -1,11 +1,21 @@
 import "./Navbar.css";
 import logo from "./logo.png";
+import { FaRegUserCircle } from "react-icons/fa";
+import { Link } from "react-router-dom"; // Importowanie Link z react-router-dom
 
 interface Props {
-  items: string[];
+  username?: string | null;
 }
 
-function Navbar({ items }: Props) {
+function Navbar({ username }: Props) {
+
+  // Pozycje menu ustawione bezpośrednio w komponencie Navbar z odpowiednimi ścieżkami
+  const items = [
+    { name: "Home", path: "/" },
+    { name: "Highlights", path: "/highlights" },
+    { name: "Create", path: "/create" }
+  ];
+
   return (
     <nav
       className="navbar navbar-expand-lg bg-body-tertiary sticky-top"
@@ -17,13 +27,14 @@ function Navbar({ items }: Props) {
             src={logo}
             className="d-inline-block align-text-top"
             style={{ height: "80px" }}
-          ></img>
+            alt="logo"
+          />
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             {items.map((item) => (
-              <li className="nav-item" key={item}>
-                <a className="nav-link active" aria-current="page" href="#">
-                  {item}
-                </a>
+              <li className="nav-item" key={item.name}>
+                <Link className="nav-link active" aria-current="page" to={item.path}>
+                  {item.name}
+                </Link>
               </li>
             ))}
           </ul>
@@ -33,22 +44,38 @@ function Navbar({ items }: Props) {
               type="search"
               placeholder="Search"
               aria-label="Search"
-            ></input>
+            />
             <button className="btn btn-outline-success" type="submit">
               Search
             </button>
           </form>
           <ul className="navbar-nav navbar-right">
-            <li className="nav-item">
-              <a className="nav-link" href="/sign-up">
-                <i className="bi bi-person"></i> Sign Up
-              </a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link" href="/login">
-                <i className="bi bi-box-arrow-in-right"></i> Login
-              </a>
-            </li>
+            {username ? (
+              <>
+                <li className="nav-user">
+                  <span className="nav-link">Welcome, {username} </span>
+                  <FaRegUserCircle className="icon" style={{ color: "yellow", fontSize: "40px" }} />
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/sign-up">
+                    Sign Out
+                  </Link>
+                </li>
+              </>
+            ) : (
+              <>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/sign-up">
+                    <i className="bi bi-person"></i> Sign Up
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/login">
+                    <i className="bi bi-box-arrow-in-right"></i> Login
+                  </Link>
+                </li>
+              </>
+            )}
           </ul>
         </div>
       </div>

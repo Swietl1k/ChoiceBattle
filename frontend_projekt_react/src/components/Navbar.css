@@ -13,3 +13,11 @@
 .form-control{
     font-size: 19px !important ; 
 }
+
+.nav-user{
+    margin-right: 1vw;
+    display: flex;
+    align-items: center;
+    gap:0.1vw
+}
+

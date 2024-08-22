@@ -1,6 +1,6 @@
 import {useState} from "react";
 import Navbar from "../components/Navbar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";    
 import { FaUser, FaEye, FaEyeSlash } from "react-icons/fa";
 import { IoMail } from "react-icons/io5";
@@ -10,6 +10,8 @@ import { USER_REGEX, PWD_REGEX, EMAIL_REGEX } from "../components/regular expres
 function SignUp () {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    const navigate = useNavigate();
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -80,6 +82,8 @@ function SignUp () {
                 setIsPasswordValid(false);
                 setIsConfirmPasswordValid(false);
 
+                navigate("/login");
+
             } else {
                 alert(response.data.error);
             }
@@ -128,7 +132,7 @@ function SignUp () {
 
     return (
         <>
-            <Navbar items={["Home", "Highlights", "Create"]} />
+            <Navbar />
             <div className="container">
                 <div className="su-header">
                     <div className="text">Sign Up</div>
