@@ -5,8 +5,8 @@
     align-items: center;
     flex-direction: column;
     background: #C0C0C0;
-    margin-top: 5vh !important;
-    margin-bottom: 5vh !important;
+    margin-top: 3vh !important;
+    margin-bottom: 3vh !important;
     width:40vw !important;
     height:100vh-100px !important;
     border-radius: 10px;
@@ -16,9 +16,9 @@
     display: flex;
     align-items: center;
     flex-direction: column;
-    gap: 3vh;
+    gap: 2vh;
     width: 100%;
-    margin-top: 3vh;
+    margin-top:2vh;
 }
 
 .underline {
@@ -36,7 +36,7 @@
 .su-inputs{
     display: flex;
     flex-direction: column;
-    gap: 3vh;
+    gap: 2vh;
     margin-top: 3vh;
 }
 
@@ -44,7 +44,7 @@
     display: flex;
     align-items: center;
     margin: auto;
-    width:30vw;
+    width:29vw;
     height:10vh;
     background:#5A5A5A;
     border-radius: 15px;
@@ -77,11 +77,10 @@
 }
 
 .su-submit {
-    display: flex;
     justify-content: center;
     align-items: center;
-    width: 24vw;
-    height: 9vh;
+    width: 22vw;
+    height: 8vh;
     color: white;
     background: #3a3a3a;
     border-radius: 50px;
@@ -89,8 +88,8 @@
     font-weight: 700;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin-bottom: 3.5vh;
-    margin-top:4vh;
+    margin-bottom: 2.5vh;
+    margin-top:3vh;
 }
 
 .su-submit:hover {
@@ -99,11 +98,21 @@
 }
 
 .login {
-    margin-bottom: 1.5vh;
+    margin-bottom: 1vh;
     font-size: 14px;
 }
 
 .login span{
     color:#ce06bd;
     cursor: pointer;
+}
+
+.valid {
+    border: 5px solid green;
+    background: #005315;
+}
+
+.invalid {
+    background:#5A5A5A;
+    border: 5px solid #3a3a3a;
 }

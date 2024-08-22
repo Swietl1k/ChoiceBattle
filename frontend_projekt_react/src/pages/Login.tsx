@@ -21,7 +21,7 @@ function Login () {
                 </div>  
                 <div className="lo-inputs">
                     <div className="input">
-                        <input type="text" placeholder="Username" required/>
+                        <input type="text" placeholder="Email" required/>
                         <FaUser className="icon"/>   
                     </div>
                     <div className="input">
