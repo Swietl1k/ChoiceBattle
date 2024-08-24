@@ -43,7 +43,7 @@ function CategoryList({ items, onSelectItem }: Props) {
           <img
             src={images[item]}
             alt={images[item]}
-            style={{ marginRight: "10px", width: "55px" }}
+            style={{ marginRight: "10px", width: "15%" }}
           ></img>
           {item}
         </li>

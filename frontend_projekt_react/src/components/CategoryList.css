@@ -1,8 +1,8 @@
 .list-group {
-    margin-top: 100px;
+    margin-top: 10vh;
     margin-left: 10%;
     width: 22%;
-    max-width: 600px;
+    max-width: 25vw;
     border-radius: 35px !important;
     float: left;
   }

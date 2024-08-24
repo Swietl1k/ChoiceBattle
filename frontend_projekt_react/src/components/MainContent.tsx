@@ -34,7 +34,7 @@ function MainContent({ selectedCategory }: Props) {
       <div className="row row-cols-2 row-cols-md-3 g-4">
         {filteredGames.map((game, index) => (
           <div className="col" key={index}>
-            <div className="card h" style={{ width: "300px", height: "340px" }}>
+            <div className="card h" style={{ width: "15vw", height: "35vh" }}>
               <img src={game.image} className="card-img-top" alt="..." />
               <div className="card-body">
                 <h5 className="card-title">{game.title}</h5>

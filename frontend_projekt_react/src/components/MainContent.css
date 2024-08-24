@@ -1,10 +1,11 @@
 .main-content-container{
-    margin-top: 100px;
+    margin-top: 10vh;
     margin-left: 5%;
     width: 50%;
     float: left;
 }
 
 .card-img-top{
-    height: 200px !important;
+    height: 60% !important;
+    width: 100% !important;
 }
