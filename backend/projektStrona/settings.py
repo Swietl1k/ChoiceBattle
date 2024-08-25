@@ -40,8 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'strona',
     'bootstrap5',
-#    'rest_framework',
-
+    'rest_framework'
 ]
 
 

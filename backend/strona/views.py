@@ -2,11 +2,13 @@ import time
 import pyrebase
 import random, string
 import requests
+import json
 
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.core.paginator import Paginator
 from firebase_admin import auth
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -15,8 +17,6 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
  
-
-
 
 
 config={
@@ -28,57 +28,25 @@ config={
     "messagingSenderId": "358939997824",
     "appId": "1:358939997824:web:73bef249ea412d35f31865",
 #    "serviceAccount": "stronaww123-firebase-adminsdk-i25oq-82ae8cdb50.json"
-#    measurementId: "G-PE8N920P01"
+#    "measurementId: "G-PE8N920P01"
 }
  
+
+
 firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 db = firebase.database()
 storage = firebase.storage()
 
-def main_page(request):
-    username = request.session.get('user_name')
-
-    if request.method == 'POST':
-        form = CategoryForm(request.POST)
-        if form.is_valid():
-            category = form.cleaned_data['category']
-            return redirect('find_category', category=category)
-        
-    else:
-        form = CategoryForm()
- 
-    return render(request, 'mainPage.html', {'user_name': username, "form": form})
 
 
-def login_navbar(request):
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-
-        try:
-            user = auth.sign_in_with_email_and_password(email, password)
-            user_id = user['localId']
-            username = str(db.child("users").child(user_id).child("username").get())
-            request.session['user_id'] = user_id
-            request.session['user_email'] = email
-            request.session['user_name'] = username
-            messages.success(request, 'Logged in successfully.')
-            return redirect('main_page')
-        
-        except Exception as e:
-            messages.error(request, 'Invalid credentials, please try again.')
-            return redirect('main_page')
-        
-    return redirect('main_page')
- 
-
+@api_view(["POST"])
 def logout(request):
     try:
-        print("Logging out user:", request.session.get('user_name'))
-        request.session.pop('user_id', None)
-        request.session.pop('user_email', None)
-        request.session.pop('user_name', None)
+        print("Logging out user:", request.session.get("user_name"))
+        request.session.pop("user_id", None)
+        request.session.pop("user_email", None)
+        request.session.pop("user_name", None)
         
         return Response({
             "success": True,
@@ -91,58 +59,72 @@ def logout(request):
             "success": False,
             "message":"LOGOUT ERROR"
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
 
-    
- 
- 
+
+
+@api_view(["POST"])
 def register(request):
-    username = request.session.get('user_name')
+    user_name = request.session.get("user_name")
 
-    if request.method == 'POST':
-        username = request.POST.get('register_username')
-        email = request.POST.get('register_email')
-        password = request.POST.get('register_password')
+    '''
+    request_body structure:
+    {
+        "email": <string: example>
+        "password": <string: example>
+        "user_name": <string: example>
+    } 
+    '''
+    
+    request_body = request.data
+    email = request_body.get("email")
+    password = request_body.get("password")
+    user_name = request_body.get("user_name")
 
-        try:
-            user = auth.create_user_with_email_and_password(email, password)
+    request.session["user_name"] = user_name
 
-        except Exception as e:
-            messages.error(request, str(e))
-            return redirect('register')
+    try:
+        auth_response = auth.create_user_with_email_and_password(email, password)
+        user_id = auth_response["localId"]
+        user_name = db.child("users").child(user_id).child("user_name").set(user_name)
         
-        for attempt in range(5):
-            try:
-                user = auth.sign_in_with_email_and_password(email, password)
-                break  
-            except Exception as e:
-                time.sleep(2)
+        request.session["user_id"] = user_id
+        request.session["user_name"] = user_name
+        request.session["user_email"] = email
 
-        try:
-            user_id = user['localId']
-            request.session['user_id'] = user_id
-            request.session['user_email'] = email
-            request.session['user_name'] = username
-            db.child("users").child(user_id).child("username").set(username)
-            messages.success(request, 'Account registered successfully.')
-            return redirect('main_page')
+        Response({
+            "success": True,
+            "message": "USER ACCOUNT CREATED SUCCESSFULLY"
+        }, status=status.HTTP_200_OK)
+    
+    except Exception as e:
+
+        return Response({
+            "success": False,
+            "error": "SIGN IN ERROR",
+        }, status=status.HTTP_400_BAD_REQUEST)
         
-        except Exception as e:
-            messages.error(request, str(e))
-            return redirect('register')
-        
-    return render(request, 'register.html', {'user_name': username})
- 
-@api_view(['POST']) # this line gives the same effect as: if request.method == "POST"; login() function accepts only requests with POST method
+
+
+@api_view(["POST"]) # this line gives the same effect as: if request.method == "POST"; login() function accepts only requests with POST method
 def login(request):
-    username = request.session.get('user_name')
+    user_name = request.session.get("user_name")
+    
+    '''
+    request_body structure:
+    {
+        email: <string: example@email.com>
+        password: <string: example>
+    }
+    
+    '''
+    
     request_body = request.data
     typ = type(request_body)
 
     request_body = {key.lower(): value for key, value in request_body.items()}
 
-    email = request_body.get('email')
-    password = request_body.get('password')
+    email = request_body.get("email")
+    password = request_body.get("password")
     
     if not email or not password:
         return Response({
@@ -152,12 +134,12 @@ def login(request):
 
     try:
         auth_response = auth.sign_in_with_email_and_password(email, password)
-        user_id = auth_response['localId']
-        username = db.child("users").child(user_id).child("username").get().val()
+        user_id = auth_response["localId"]
+        user_name = db.child("users").child(user_id).child("user_name").get().val()
         
-        request.session['user_id'] = user_id
-        request.session['user_name'] = username
-        request.session['user_email'] = email
+        request.session["user_id"] = user_id
+        request.session["user_name"] = user_name
+        request.session["user_email"] = email
         
         return Response({
             "success": True,
@@ -170,146 +152,108 @@ def login(request):
             "success": False,
             "error": "INVALID LOGIN CREDENTIALS",
         }, status=status.HTTP_400_BAD_REQUEST)
-        
- 
- 
+
+
+
+@api_view(["POST"])        
 def create(request):
-    username = request.session.get('user_name')
-    user_id = request.session.get('user_id')
+    user_name = request.session.get("user_name")
 
-    if request.method == 'POST':
-        form = GameForm(request.POST)
-
-        if form.is_valid():
-            title = form.cleaned_data['title']
-            description = form.cleaned_data['description']
-            number_of_choices = int(form.cleaned_data['number_of_choices'])
-            category = form.cleaned_data['category']
-            game_id = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
- 
-            game_data = {
-                "title": title,
-                "number_of_choices": number_of_choices,
-                "category": category,
-                "description": description,
-            }
- 
-            try:
-                poland_time = datetime.now(ZoneInfo('Europe/Warsaw'))
-                formatted_time = poland_time.strftime('%Y-%m-%d %H:%M:%S %Z%z')
-                db.child("games").child(game_id).set(game_data)
-                db.child("games").child(game_id).child("date").set(formatted_time)
-                db.child("games").child(game_id).child("user_id").set(user_id)
-                db.child("games").child(game_id).child("play_count").set(0)
-                messages.success(request, "Game created successfully!")
-                request.session[f'can_add_pics_{game_id}'] = True
-                return redirect('add_pics', game_id=game_id)
-            
-            except Exception as e:
-                messages.error(request, f"An error occurred: {e}")
-                return redirect('create')
-            
-    else:
-        form = GameForm()
- 
-    return render(request, 'create.html', {'form': form, 'user_name': username})
- 
- 
-def add_pics(request, game_id):
-    username = request.session.get('user_name')
-    if not request.session.get(f'can_add_pics_{game_id}', False):
-        messages.error(request, "Access this page only after submiting initial game data")
-        request.session.pop(f'can_add_pics_{game_id}', None)
-        return redirect('main_page')
-
-    username = request.session.get('user_name')
-    game = db.child("games").child(game_id).get().val()
-
-    if not game:
-        messages.error(request, "Invalid game ID.")
-        return redirect('main_page')
- 
-    number_of_choices = game.get('number_of_choices', 0)
-    current_upload_count = request.session.get(f'upload_count_{game_id}', 0)
+    '''
+    fetching request_body (json string) from client request and convert it to dict; 
+    request_body structure: 
+    {
+        "title": <string: example>, 
+        "category": <string: example>, 
+        "number_of_choices": <int: example>, 
+        "description": <string: example>, 
+        "choices_data": [{
+                            "title": <string: example>, 
+                            "photo_url": <string: example>, 
+                            "pick_count": <int: example>, 
+                            "win_count": <int: example>
+                        }]
+    }
+    '''
     
-    if request.method == 'POST':
-        form = UploadFileForm(request.POST, request.FILES)
+    request_body = json.loads(request.data) # json string to dict conversion
 
-        if form.is_valid():
-            title = form.cleaned_data['title']
-            file = request.FILES['file']
- 
-            try:
-                file_path = f"images/{game_id}/{current_upload_count}.png"
-                storage.child(file_path).put(file)
- 
-                db.child("games").child(game_id).child("choice_data").child(current_upload_count).child("title").set(title)
-                db.child("games").child(game_id).child("choice_data").child(current_upload_count).child("pick_count").set(0)
-                db.child("games").child(game_id).child("choice_data").child(current_upload_count).child("win_count").set(0)
- 
-                current_upload_count += 1
-                request.session[f'upload_count_{game_id}'] = current_upload_count
- 
-                if current_upload_count < number_of_choices:
-                    messages.success(request, f"Image {current_upload_count} uploaded successfully! Please upload the next image.")
-                    return redirect('add_pics', game_id=game_id)
+    game_id = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
+    poland_time = datetime.now(ZoneInfo("Europe/Warsaw"))
+    formatted_time = poland_time.strftime("%Y-%m-%d %H:%M:%S %Z%z")
+    user_id = request.session.get("user_id") 
+    play_count = 0
 
-                else:
-                    messages.success(request, "All images uploaded successfully!")
-                    request.session.pop(f'can_add_pics_{game_id}', None)
-                    request.session.pop(f'upload_count_{game_id}', None)
-                    return redirect('main_page')
-                
-            except Exception as e:
-                messages.error(request, f"Error uploading image: {str(e)}")
-                return redirect('add_pics', game_id=game_id)
-            
-    else:
-        form = UploadFileForm()
+    request_body.upadate({
+            "date": formatted_time,
+            "user_id": user_id,
+            "play_count": play_count
+        })
+
+    try:
+        db.child("games").child(game_id).set(request_body)
+
+        return Response({
+            "success": True,
+            "message": "GAME DATA ALLOCATED IN DATABASE SUCCESSFULLY"
+        }, status=status.HTTP_200_OK) 
+
+    except Exception as e:
+
+        return Response({
+            "success": False,
+            "error": "DATABASE WRITE ERROR",
+        }, status=status.HTTP_400_BAD_REQUEST)
  
-    return render(request, 'add_pics.html', {"user_name": username, "form": form, 'game_id': game_id, 'upload_count': current_upload_count, 'user_name': username})
 
 
+@api_view(["GET"])
 def find_category(request, category):
-    username = request.session.get('user_name')
-    games = []
-    all_games = db.child("games").get().val()
+    user_name = request.session.get("user_name")
 
-    if all_games:
-        for game_id, game_data in all_games.items():
-            if game_data.get("category") == category:
-                number_of_choices = game_data.get("number_of_choices", 0)
-                choice_data = game_data.get("choice_data", [])
-                if len(choice_data) == number_of_choices:
-                    game_data['game_id'] = game_id
-                    games.append(game_data)
-                else:
-                    try:
-                        #db.child("games").child(game_id).remove()
-                        for i in range(len(choice_data)):
-                            print(i)
-                            auth_token = request.session.get('auth_token')
-                            storage.delete(f"images/{game_id}/{i}.png", token=auth)
-                    except Exception as e:
-                        print(f'Error deleting incomplete game {game_id}, {e}')
-
-    else:
-        messages.error(request, "Error accessing database")
-        return redirect('main_page')
-
-    return render(request, 'category.html', {'user_name': username, "category": category, "games": games})
-
-
-def show_game(request, game_id):
-    username = request.session.get('user_name')
-    game_data = db.child("games").child(game_id).get().val()
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        if action == 'button_play':
-            request.session[f'is_game_start_{game_id}'] = True
-            return redirect('play', game_id=game_id)
+    if not category == "all":
+        try:
+            games_from_category = db.child("games").order_by_child("category").equal_to(category).get().val()
+            games_from_category_list = list(games_from_category.items())
         
-    return render(request, 'show_game.html', {'user_name': username, 'game_data': game_data, 'game_id': game_id})
+        except Exception as e:
+            print("Exception: ", e)
+            
+            return Response({
+            "success": False,
+            "error": f"DATABASE READ ERROR FROM {category}",
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    else:
+        try:
+            games_from_caregory = db.child("games").get.val()
+            games_from_category_list = list(games_from_caregory.items())
+        
+        except Exception as e:
+            print("Exception: ", e)
+
+            return Response({
+            "success": False,
+            "error": f"DATABASE READ ERROR FROM {category}",
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    paginator = Paginator(games_from_category_list, 2)  # 2 items per page
+    page_number = request.query_params.get("page", 1)  # Get the page number from the request, default is 1
+    page_obj = paginator.get_page(page_number)
+
+    response_data = {
+        'user_name': user_name, 
+        'category': category, 
+        'count': paginator.count,
+        'total_pages': paginator.num_pages,
+        'current_page': page_number,
+        'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
+        'previous_page': page_obj.previous_page_number() if page_obj.has_previous() else None,
+        'results': dict(page_obj.object_list),
+    }    
+
+    Response(response_data, status=status.HTTP_200_OK)
+
 
 
 def play(request, game_id):
@@ -453,6 +397,75 @@ def play(request, game_id):
     return render(request, 'play.html', {'user_name': username, 'img1': img1, 'img2': img2, 'title1': title1, 'title2': title2, 'game_data': game_data, 'game_id': game_id })
 
 
+
+def add_pics(request, game_id):
+    username = request.session.get('user_name')
+    if not request.session.get(f'can_add_pics_{game_id}', False):
+        messages.error(request, "Access this page only after submiting initial game data")
+        request.session.pop(f'can_add_pics_{game_id}', None)
+        return redirect('main_page')
+
+    username = request.session.get('user_name')
+    game = db.child("games").child(game_id).get().val()
+
+    if not game:
+        messages.error(request, "Invalid game ID.")
+        return redirect('main_page')
+ 
+    number_of_choices = game.get('number_of_choices', 0)
+    current_upload_count = request.session.get(f'upload_count_{game_id}', 0)
+    
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            title = form.cleaned_data['title']
+            file = request.FILES['file']
+ 
+            try:
+                file_path = f"images/{game_id}/{current_upload_count}.png"
+                storage.child(file_path).put(file)
+ 
+                db.child("games").child(game_id).child("choice_data").child(current_upload_count).child("title").set(title)
+                db.child("games").child(game_id).child("choice_data").child(current_upload_count).child("pick_count").set(0)
+                db.child("games").child(game_id).child("choice_data").child(current_upload_count).child("win_count").set(0)
+ 
+                current_upload_count += 1
+                request.session[f'upload_count_{game_id}'] = current_upload_count
+ 
+                if current_upload_count < number_of_choices:
+                    messages.success(request, f"Image {current_upload_count} uploaded successfully! Please upload the next image.")
+                    return redirect('add_pics', game_id=game_id)
+
+                else:
+                    messages.success(request, "All images uploaded successfully!")
+                    request.session.pop(f'can_add_pics_{game_id}', None)
+                    request.session.pop(f'upload_count_{game_id}', None)
+                    return redirect('main_page')
+                
+            except Exception as e:
+                messages.error(request, f"Error uploading image: {str(e)}")
+                return redirect('add_pics', game_id=game_id)
+            
+    else:
+        form = UploadFileForm()
+ 
+    return render(request, 'add_pics.html', {"user_name": username, "form": form, 'game_id': game_id, 'upload_count': current_upload_count, 'user_name': username})
+
+
+
+def show_game(request, game_id):
+    username = request.session.get('user_name')
+    game_data = db.child("games").child(game_id).get().val()
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'button_play':
+            request.session[f'is_game_start_{game_id}'] = True
+            return redirect('play', game_id=game_id)
+        
+    return render(request, 'show_game.html', {'user_name': username, 'game_data': game_data, 'game_id': game_id})
+
+
 '''
 
 
@@ -499,3 +512,4 @@ def sign_up_user(request, *args, **kwargs):
 
     return Response(json_reponse)
 '''
+
