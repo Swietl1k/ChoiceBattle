@@ -1,0 +1,9 @@
+.pagination{
+    margin-top: 3vh;
+}
+
+.pagination .page-item.active .page-link {
+    border-color: green;     
+    color: green !important;
+    font-weight: bolder;
+  }

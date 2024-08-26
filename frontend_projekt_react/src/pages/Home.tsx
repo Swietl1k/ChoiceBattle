@@ -5,7 +5,6 @@ import CategoryList from "../components/CategoryList";
 import MainContent from "../components/MainContent";
 
 function Home() {
-
   const location = useLocation();
 
   //Bedzie jakos username, a nie mail
@@ -13,16 +12,24 @@ function Home() {
 
   const categories = ["All", "Food", "Sport", "Animals", "Gaming", "Nature"];
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleSelectItem = (item: string) => {
     setSelectedCategory(item);
   };
 
+  const handleSearchTerm = (item: string) => {
+    setSearchTerm(item);
+  };
+
   return (
     <>
-      <Navbar username ={email}/>
+      <Navbar username={email} onSearchTerm={handleSearchTerm} />
       <CategoryList items={categories} onSelectItem={handleSelectItem} />
-      <MainContent selectedCategory={selectedCategory} />
+      <MainContent
+        selectedCategory={selectedCategory}
+        searchTerm={searchTerm}
+      />
     </>
   );
 }
