@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import SignUp from "./pages/SignUp";
+import GameDetails from "./pages/GameDetails";
 
 function App() {
   return (
@@ -11,11 +12,13 @@ function App() {
       <Routes>
         {/* Renderowanie strony głównej */}
         <Route path="/" element={<Home />} />
-        
+
         {/* Renderowanie strony logowania */}
         <Route path="/login" element={<Login />} />
-        
+
         <Route path="/sign-up" element={<SignUp />} />
+
+        <Route path="/:category/:id" element={<GameDetails />} />
       </Routes>
     </BrowserRouter>
   );
