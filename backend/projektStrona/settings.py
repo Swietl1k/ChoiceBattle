@@ -136,6 +136,5 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-cred = credentials.Certificate(os.path.join(BASE_DIR, 'stronaww123-firebase-adminsdk-i25oq-82ae8cdb50.json'))
-
-firebase_admin.initialize_app(cred)
+#cred = credentials.Certificate(os.path.join(BASE_DIR, 'stronaww123-firebase-adminsdk-i25oq-82ae8cdb50.json'))
+#firebase_admin.initialize_app(cred)

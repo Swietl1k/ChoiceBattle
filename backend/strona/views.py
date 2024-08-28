@@ -47,13 +47,27 @@ storage = firebase.storage()
 
 @api_view(['GET'])
 def get_game_by_id(request, game_id):
-    games = db.child("games").child(game_id).get().val()
-    print(games)
-    return JsonResponse(games)
+    try:
+        game = db.child("games").child(game_id).get().val()
+    except Exception as e:
+        print("Exception: ", e)
+
+        return Response({
+            "success": False,
+            "error": f"DATABASE READ ERROR FROM GAME ID: {game_id}",
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    if not game:
+       return Response({
+            "success": False,
+            "error": f"THERE IS NO SUCH GAME ID: {game_id} IN DATABASE"
+        }, status=status.HTTP_400_BAD_REQUEST) 
+    
+    return Response(game)
 
 
 
-@api_view('POST')
+@api_view(['POST'])
 def make_comment(request, game_id):
     pass
 
@@ -224,35 +238,46 @@ def create(request):
 def find_category(request, category):
     user_name = request.session.get("user_name")
 
-    if not category == "all":
-        try:
+    get = request.GET
+    body = request.body
+    headers = request.headers
+    content_type = request.content_type
+    
+    try:
+        if not category == "all":
             games_from_category = db.child("games").order_by_child("category").equal_to(category).get().val()
             games_from_category_list = list(games_from_category.items())
-        
-        except Exception as e:
-            print("Exception: ", e)
-            
-            return Response({
-            "success": False,
-            "error": f"DATABASE READ ERROR FROM {category}",
-        }, status=status.HTTP_400_BAD_REQUEST)
-    
-    else:
-        try:
+        else:
             games_from_caregory = db.child("games").get.val()
             games_from_category_list = list(games_from_caregory.items())
-        
-        except Exception as e:
-            print("Exception: ", e)
 
-            return Response({
+    except AttributeError as e: # Error which occurs when frontend is referring to unexisting category in database
+        games_from_caregory = None
+        print("Exception: ", e)
+
+        return Response({
             "success": False,
-            "error": f"DATABASE READ ERROR FROM {category}",
+            "error": f"THERE IS NO SUCH CATEGORY: {category} IN DATABASE"
         }, status=status.HTTP_400_BAD_REQUEST)
+        
+    except Exception as e:
+        print("Exception: ", e)
 
+        return Response({
+            "success": False,
+            "error": f"DATABASE READ ERROR FROM CATEGORY: {category}",
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    
+    
     paginator = Paginator(games_from_category_list, 2)  # 2 items per page
     page_number = request.query_params.get("page", 1)  # Get the page number from the request, default is 1
-    page_obj = paginator.get_page(page_number)
+    '''
+    When page_number received from query params exceeds num_pages calculated by paginator, paginator.get_page(page_number) will return page_obj adequate to num_pages value.
+    When page_nmber received from query params is not a number (e.g. "?page=3z") paginator.get_page(page_number) will return page_obj corresponding to first page.
+    
+    '''
+    page_obj = paginator.get_page(page_number)   
 
     response_data = {
         'user_name': user_name, 
@@ -262,10 +287,11 @@ def find_category(request, category):
         'current_page': page_number,
         'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
         'previous_page': page_obj.previous_page_number() if page_obj.has_previous() else None,
-        'results': dict(page_obj.object_list),
+        'results': dict(page_obj.object_list)
     }    
 
-    Response(response_data, status=status.HTTP_200_OK)
+
+    return Response(response_data, status=status.HTTP_200_OK)
 
     
     
@@ -426,9 +452,9 @@ def play_endpoint(request, game_id):
 
 
 
-#########################################################################################################################################################################
+################################################ STARE: #########################################################################################################################
 
-
+'''
 def find_category(request, category):
     username = request.session.get('user_name')
     games = []
@@ -680,56 +706,9 @@ def show_game(request, game_id):
             return redirect('play', game_id=game_id)
         
     return render(request, 'show_game.html', {'user_name': username, 'game_data': game_data, 'game_id': game_id})
-
-
 '''
 
-
-
-WEB_API_KEY = 'AIzaSyC2Jg3HI7jpGeukh0EgXmrb11GbBBnWMTQ'
-
-# Create your views here.
-
-@api_view(['POST'])
-def api_main(request, *args, **kwargs):
-    get = request.GET
-    body = request.body
-    headers = request.headers
-    content_type = request.content_type
-    
-    data = {}
-    try:
-        data = json.loads(body)
-    except:
-        pass
-    
-    data['get'] = dict(get)
-    data['headers'] = dict(headers)
-    data['content_type'] = content_type
-
-    print('data: ', data)
-    print('Body: ', body)
-    print('GET: ', get)
-    print('Headers: ', headers)
-    return Response(data)
-
-@api_view(['POST'])
-def sign_up_user(request, *args, **kwargs):
-    request_body = request.data
-    print(request_body)
-
-    firebase_endpoint = f'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={WEB_API_KEY}'
-    
-    
-    response = requests.post(firebase_endpoint, json=request_body)
-
-    json_reponse = response.json()
-    
-
-    return Response(json_reponse)
 '''
-
-
 def login_navbar(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -852,3 +831,51 @@ def find_category_endpoint(request, category):
     }
 
     return JsonResponse(response_data)        
+'''
+
+
+########################################################### TESTOWE: #######################################################################
+
+'''
+WEB_API_KEY = 'AIzaSyC2Jg3HI7jpGeukh0EgXmrb11GbBBnWMTQ'
+
+# Create your views here.
+
+@api_view(['POST'])
+def api_main(request, *args, **kwargs):
+    get = request.GET
+    body = request.body
+    headers = request.headers
+    content_type = request.content_type
+    
+    data = {}
+    try:
+        data = json.loads(body)
+    except:
+        pass
+    
+    data['get'] = dict(get)
+    data['headers'] = dict(headers)
+    data['content_type'] = content_type
+
+    print('data: ', data)
+    print('Body: ', body)
+    print('GET: ', get)
+    print('Headers: ', headers)
+    return Response(data)
+
+@api_view(['POST'])
+def sign_up_user(request, *args, **kwargs):
+    request_body = request.data
+    print(request_body)
+
+    firebase_endpoint = f'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={WEB_API_KEY}'
+    
+    
+    response = requests.post(firebase_endpoint, json=request_body)
+
+    json_reponse = response.json()
+    
+
+    return Response(json_reponse)
+'''

@@ -25,9 +25,14 @@ db = firebase.database()
 #print(xd)
 
 
-endpoint = 'http://localhost:8000/strona/find_category/Sports/'
+endpoint1 = 'http://localhost:8000/strona/find_category/Sports?xd=1'
+endpoint2 = 'http://localhost:8000/strona/get_game_by_id/effdggdfgdh/'
 
-get_response = requests.get(endpoint, json={"email": "grzegorz@braun.com", "password": "korona"})
+
+get_response = requests.get(endpoint2, json={"email": "grzegorz@braun.com", "password": "korona"})
+
+print(type(get_response))
 
 print(f"Status code: {get_response.status_code}")
-#print(f"JSON Response: {get_response.json()}")
+#print(f"Text Response: {get_response.text}")
+print(f"JSON Response: {get_response.json()}")
