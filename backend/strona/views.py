@@ -533,7 +533,12 @@ def play_end_post(request, game_id):
 
 
 
-"""
+
+
+################################################ STARE: #########################################################################################################################
+
+'''
+
 @api_view(['GET', 'POST'])
 def play_endpoint(request, game_id):
     username = request.session.get('user_name')
@@ -687,13 +692,10 @@ def play_endpoint(request, game_id):
 
         return JsonResponse(response_data)
 
-"""
 
 
 
-################################################ STARE: #########################################################################################################################
 
-'''
 def find_category(request, category):
     username = request.session.get('user_name')
     games = []

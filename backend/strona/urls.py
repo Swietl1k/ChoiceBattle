@@ -17,9 +17,9 @@ urlpatterns = [
     path('play_end_get/<str:game_id>/', views.play_end_get, name="play_end_get"),
     path('play_end_post/<str:game_id>/', views.play_end_post, name="play_end_post"),
     path('get_game_by_id/<str:game_id>/', views.get_game_by_id, name="get_game_by_id"),
-    path('play_endpoint/<str:game_id>/', views.play_endpoint, name="play_endpoint"),
-    path('find_category_endpoint/<str:category>/', views.find_category_endpoint, name="find_category_endpoint"),
+    #path('play_endpoint/<str:game_id>/', views.play_endpoint, name="play_endpoint"),
+    path('find_category/<str:category>/', views.find_category, name="find_category"),
     path('add_comment/<str:game_id>/', views.add_comment, name="add_comment"),
     path('get_game_comments/<str:game_id>/', views.get_game_comments, name="get_game_comments"),
-    
+
 ]
