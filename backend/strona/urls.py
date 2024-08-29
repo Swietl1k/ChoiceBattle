@@ -8,10 +8,10 @@ urlpatterns = [
     #path('login_navbar/', views.login_navbar, name='login_navbar'),
     path('logout/', views.logout, name='logout'),
     path('create/', views.create, name='create'),
-    path('add_pics/<str:game_id>/', views.add_pics, name='add_pics'),
+    #path('add_pics/<str:game_id>/', views.add_pics, name='add_pics'),
     path('find_category/<str:category>/', views.find_category, name='find_category'),
-    path('show_game/<str:game_id>/', views.show_game, name='show_game'),
-    path('play/<str:game_id>/', views.play, name='play'),
+    #path('show_game/<str:game_id>/', views.show_game, name='show_game'),
+    #path('play/<str:game_id>/', views.play, name='play'),
 
     path('start_game/<str:game_id>/', views.start_game, name="start_game"),
     path('play_end_get/<str:game_id>/', views.play_end_get, name="play_end_get"),
