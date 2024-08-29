@@ -13,9 +13,13 @@ urlpatterns = [
     path('show_game/<str:game_id>/', views.show_game, name='show_game'),
     path('play/<str:game_id>/', views.play, name='play'),
 
-
+    path('start_game/<str:game_id>/', views.start_game, name="start_game"),
+    path('play_end_get/<str:game_id>/', views.play_end_get, name="play_end_get"),
+    path('play_end_post/<str:game_id>/', views.play_end_post, name="play_end_post"),
     path('get_game_by_id/<str:game_id>/', views.get_game_by_id, name="get_game_by_id"),
-    path('get_all_games/', views.get_all_games, name="get_all_games"),
     path('play_endpoint/<str:game_id>/', views.play_endpoint, name="play_endpoint"),
-    path('find_category_endpoint/<str:category>/', views.find_category_endpoint, name="find_category_endpoint")
+    path('find_category_endpoint/<str:category>/', views.find_category_endpoint, name="find_category_endpoint"),
+    path('add_comment/<str:game_id>/', views.add_comment, name="add_comment"),
+    path('get_game_comments/<str:game_id>/', views.get_game_comments, name="get_game_comments"),
+    
 ]
