@@ -210,6 +210,7 @@ def login(request):
     '''
     
     request_body = request.data
+    print(request_body)
     typ = type(request_body)
 
     #request_body = {key.lower(): value for key, value in request_body.items()}
@@ -305,6 +306,50 @@ def create(request):
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
+# Dodawanie komentarzy powinno być możliwe tylko po zalogowaniu
+@api_view(['POST'])
+def add_comment(request, game_id):
+    user_id = request.session.get('user_id')
+
+    # request_body:
+    # {"comment": <string: example>}
+
+    request_body = request.data
+    comment_id = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
+    poland_time = datetime.now(ZoneInfo("Europe/Warsaw"))
+    formatted_time = poland_time.strftime("%Y-%m-%d %H:%M:%S %Z%z")
+
+    request_body.update({
+            "date": formatted_time,
+            "game_id": game_id,
+            "user_id": user_id,
+        })
+    
+    db.child("comments").child(comment_id).set(request_body)
+    print(request_body)
+
+    return Response(request_body)
+
+
+@api_view(['GET'])
+def get_game_comments(request, game_id):
+    try:
+        game_comments = db.child("comments").order_by_child("game_id").equal_to(game_id).get().val()
+        #game_comments_list = list(game_comments.items())
+        # nie wiem czy robić paginacje skoro chcą ją na froncie robic 
+        return Response(game_comments, status=status.HTTP_200_OK)
+    
+    except Exception as e:
+        return Response({
+            "success": False,
+            "error": "ERROR FETCHING COMMENTS FROM DATABASE",
+        }, status=status.HTTP_400_BAD_REQUEST)
+        
+    
+
+        
+
+
 
 @api_view(["GET"])
 def find_category(request, category):
@@ -365,8 +410,207 @@ def find_category(request, category):
 
     return Response(response_data, status=status.HTTP_200_OK)
 
+
+
+@api_view(['GET'])
+def start_game(request, game_id):
+    request.session[f'is_game_start_{game_id}'] = True
+    return Response({"game_id": game_id, "status": "started"}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def play_end_get(request, game_id):
+    username = request.session.get('user_name')
+    game_data = db.child("games").child(game_id).get().val()
+    number_of_choices = int(game_data["number_of_choices"])
+    storage = firebase.storage()
+
+    if request.session.get(f'is_game_start_{game_id}', False):
+        request.session.pop(f'current_round_{game_id}', None) 
+        request.session.pop(f'current_stage_{game_id}', None) 
+        request.session.pop(f'img1_number_{game_id}', None) 
+        request.session.pop(f'img2_number_{game_id}', None) 
+        request.session.pop(f'img_list_{game_id}', None) 
+        request.session.pop(f'is_game_start_{game_id}', None) 
+
+        for i in range(5):
+            request.session.pop(f'stage_{i}_winner_{game_id}', None)
+
+    current_round = request.session.get(f'current_round_{game_id}', 0)
+    current_stage = request.session.get(f'current_stage_{game_id}', 0)
+        
+    if current_round == 0:
+        number_list = list(range(number_of_choices))
+        request.session[f'img_list_{game_id}'] = number_list
+        img_list = request.session.get(f'img_list_{game_id}')
+        request.session[f'stage_0_winner_{game_id}'] = []
+
+    elif current_round > (number_of_choices - 2):
+        winner_list = request.session.get(f'stage_{current_stage}_winner_{game_id}', [])
+        winning_number = winner_list[0]
+        win_count = db.child("games").child(game_id).child("choice_data").child(winning_number).child("win_count").get().val()
+        win_count += 1
+        db.child("games").child(game_id).child("choice_data").child(winning_number).child("win_count").set(win_count) 
+
+        play_count = db.child("games").child(game_id).child("play_count").get().val()
+        play_count += 1
+        db.child("games").child(game_id).child("play_count").set(play_count) 
+
+        request.session.pop(f'current_round_{game_id}', None) 
+        request.session.pop(f'current_stage_{game_id}', None)
+        request.session.pop(f'img1_number_{game_id}', None) 
+        request.session.pop(f'img2_number_{game_id}', None) 
+        request.session.pop(f'img_list_{game_id}', None) 
+        for i in range(5):
+            request.session.pop(f'stage_{i}_winner_{game_id}', None)
+
+        return redirect('show_game', game_id=game_id)
+        
+    stage_mapping = {
+        (8, 4): 1,
+        (8, 6): 2,
+        (16, 8): 1,
+        (16, 12): 2,
+        (16, 14): 3,
+        (32, 16): 1,
+        (32, 24): 2,
+        (32, 28): 3,
+        (32, 30): 4,
+    }
+    current_stage = stage_mapping.get((number_of_choices, current_round))
+
+    if current_stage is not None:
+        request.session[f'stage_{current_stage}_winner_{game_id}'] = []
+        request.session[f'current_stage_{game_id}'] = current_stage
+
+    current_stage = request.session.get(f'current_stage_{game_id}')
+    print(f'round: {current_round}, stage: {current_stage}')
+
+
+    """
+    def game_progression(number_of_choices, current_round, current_stage):
+        choices_in_stage = number_of_choices / 2 ** (current_stage + 1)
+        if current_round > 4:
+            pass
+
+        progress = str(current_round) + "/" + str(choices_in_stage)
+        return progress
+    """
+
+    img_list = request.session.get(f'img_list_{game_id}', None)
+    img1_number = request.session.get(f'img1_number_{game_id}', None)
+    img2_number = request.session.get(f'img2_number_{game_id}', None)
+
+    if img1_number == None:
+        if not img_list:
+            img_list = request.session.get(f'stage_{current_stage - 1}_winner_{game_id}', [])
+
+        img1_number = random.choice(img_list)
+        img2_number = random.choice(img_list)
+        print(f'img list: {img_list}')
+
+        while img2_number == img1_number:
+            img2_number = random.choice(img_list)
+
+        img_list.remove(img1_number)
+        img_list.remove(img2_number)
+        request.session[f'img1_number_{game_id}'] = img1_number
+        request.session[f'img2_number_{game_id}'] = img2_number
+        request.session[f'img_list_{game_id}'] = img_list
+        
+    file_path1 = 'images/' + game_id + f'/{img1_number}.png'
+    file_path2 = 'images/' + game_id + f'/{img2_number}.png'
+    img1 = storage.child(file_path1).get_url(None)
+    img2 = storage.child(file_path2).get_url(None)
+    title1 = db.child("games").child(game_id).child("choice_data").child(img1_number).child("title").get().val()
+    title2 = db.child("games").child(game_id).child("choice_data").child(img2_number).child("title").get().val()
     
+
+
+    response_data = {
+        'user_name': username, 
+        #'current_stage': ,
+        'img1_url': img1, 
+        'img2_url': img2, 
+        'img1_title': title1, 
+        'img2_title': title2, 
+        'game_id': game_id,
+        'game_data': game_data, 
+    }
+
+    return JsonResponse(response_data)
+
+
+@api_view(['POST'])
+def play_end_post(request, game_id):
+    #action = request.POST.get('action')
+    request_body = request.data
+    action = request_body.get("winner")
+    print(request_body)
+    print(action)
+
+
+    if action == 'button_img1':
+        winner = request.session.get(f'img1_number_{game_id}', None)
+        current_round = request.session.get(f'current_round_{game_id}', 0)
+        current_stage = request.session.get(f'current_stage_{game_id}', 0)
+
+        winner_list = request.session.get(f'stage_{current_stage}_winner_{game_id}', [])
+        winner_list.append(winner)
+        request.session[f'stage_{current_stage}_winner_{game_id}'] = winner_list
+
+        pick_count = db.child("games").child(game_id).child("choice_data").child(winner).child("pick_count").get().val()
+        pick_count += 1
+        db.child("games").child(game_id).child("choice_data").child(winner).child("pick_count").set(pick_count)
+
+        request.session.pop(f'img1_number_{game_id}', None) 
+        request.session.pop(f'img2_number_{game_id}', None) 
+        current_round += 1
+        request.session[f'current_round_{game_id}'] = current_round 
+
+        return Response(
+            {
+                "winner": winner,
+                "message": "img1 won"
+            }
+        )
+        #return redirect('play', game_id=game_id)
     
+    if action == 'button_img2':
+        winner = request.session.get(f'img2_number_{game_id}', None)
+        current_round = request.session.get(f'current_round_{game_id}', 0)
+        current_stage = request.session.get(f'current_stage_{game_id}', 0)
+
+        winner_list = request.session.get(f'stage_{current_stage}_winner_{game_id}', [])
+        winner_list.append(winner)
+        request.session[f'stage_{current_stage}_winner_{game_id}'] = winner_list
+
+        pick_count = db.child("games").child(game_id).child("choice_data").child(winner).child("pick_count").get().val()
+        pick_count += 1
+        db.child("games").child(game_id).child("choice_data").child(winner).child("pick_count").set(pick_count)
+
+        request.session.pop(f'img1_number_{game_id}', None) 
+        request.session.pop(f'img2_number_{game_id}', None) 
+        current_round += 1
+        request.session[f'current_round_{game_id}'] = current_round 
+
+        return Response(
+            {
+                "winner": winner,
+                "message": "img2 won"
+            }
+        )
+        #return redirect('play', game_id=game_id)
+
+
+
+
+
+
+################################################ STARE: #########################################################################################################################
+
+'''
+
 @api_view(['GET', 'POST'])
 def play_endpoint(request, game_id):
     username = request.session.get('user_name')
@@ -510,12 +754,12 @@ def play_endpoint(request, game_id):
 
         response_data = {
             'user_name': username, 
-            'img1': img1, 
-            'img2': img2, 
-            'title1': title1, 
-            'title2': title2, 
+            'img1_url': img1, 
+            'img2_url': img2, 
+            'img1_title': title1, 
+            'img2_title': title2, 
+            'game_id': game_id,
             'game_data': game_data, 
-            'game_id': game_id ,
         }
 
         return JsonResponse(response_data)
@@ -524,9 +768,6 @@ def play_endpoint(request, game_id):
 
 
 
-################################################ STARE: #########################################################################################################################
-
-'''
 def find_category(request, category):
     username = request.session.get('user_name')
     games = []
