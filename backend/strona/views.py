@@ -1,29 +1,30 @@
 import time, os
+import firebase_admin.auth
 import pyrebase
 import random, string
 import requests
 import json
 import pyrebase
+import firebase_admin 
 from pathlib import Path
-from django.http import HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-from django.contrib import messages
 from django.core.paginator import Paginator
 from firebase_admin import auth
 from .forms import *
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from rest_framework.generics import ListAPIView, RetrieveAPIView
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.response import Response
+from decorators import protected_view
  
 
-#BASE_DIR = Path(__file__).resolve().parent.parent.parent
-#path_key = os.path.join(BASE_DIR, 'stronaww123-firebase-adminsdk-i25oq-82ae8cdb50.json')
+BASE_DIR = Path(__file__).resolve().parent
+path_key = os.path.join(BASE_DIR, 'stronaww123-firebase-adminsdk-i25oq-82ae8cdb50.json')
 
+cred = firebase_admin.credentials.Certificate(path_key)
+firebase_admin.initialize_app(cred)
 
 
 config={
@@ -45,6 +46,34 @@ db = firebase.database()
 storage = firebase.storage()
 
 
+
+@api_view(["GET"])
+def get_new_id_token(request):
+    try:
+        result = auth.refresh(request.COOKIES.get("refresh_token"))
+    except Exception as e:
+        print("Exception: ", e)
+
+        message = json.loads(e.strerror).get("error").get("message")
+
+        return Response({
+            "success": False,
+            "message": f"REFRESH TOKEN ERROR -> {message}"
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    response = Response({
+        "success": True,
+        "message": "NEW ID TOKEN CREATED SUCCESSFULLY",
+        "user_id": result.get("userId"),
+        "id_token": result.get("idToken"),
+    }, status=status.HTTP_200_OK)
+
+    response.set_cookie("refresh_token", value=result.get("refreshToken"), httponly=True)
+
+    return response
+
+
+
 @api_view(['GET'])
 def get_game_by_id(request, game_id):
     try:
@@ -54,13 +83,13 @@ def get_game_by_id(request, game_id):
 
         return Response({
             "success": False,
-            "error": f"DATABASE READ ERROR FROM GAME ID: {game_id}",
+            "message": f"DATABASE READ ERROR FROM GAME ID: {game_id}",
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     if not game:
        return Response({
             "success": False,
-            "error": f"THERE IS NO SUCH GAME ID: {game_id} IN DATABASE"
+            "message": f"THERE IS NO SUCH GAME ID: {game_id} IN DATABASE"
         }, status=status.HTTP_400_BAD_REQUEST) 
     
     return Response(game)
@@ -74,30 +103,46 @@ def make_comment(request, game_id):
 
 
 @api_view(["POST"])
+@protected_view
 def logout(request):
+        
+    #print("Logging out user:", request.session.get("user_name"))
+    user_id = getattr(request, "user_id", None)
+        
     try:
-        print("Logging out user:", request.session.get("user_name"))
-        request.session.pop("user_id", None)
-        request.session.pop("user_email", None)
-        request.session.pop("user_name", None)
-        
-        return Response({
-            "success": True,
-            "message": "LOGGED OUT SUCCESSFULLY"
-        }, status=status.HTTP_200_OK)
+        firebase_admin.auth.revoke_refresh_tokens(user_id) # this method revokes id_token and also refresh_token
+    except Exception as e:
+        print("Exception: ", e)
 
-    except KeyError as e:
-        
+        message = e.args[0]
+
         return Response({
             "success": False,
-            "message":"LOGOUT ERROR"
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            "message": f"LOGOUT ERROR -> {message}"
+        },status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+    #request.session.pop("user_id", None)
+    #request.session.pop("user_email", None)
+    #request.session.pop("user_name", None)
+        
+    return Response({
+        "success": True,
+        "message": "LOGGED OUT SUCCESSFULLY"
+    }, status=status.HTTP_200_OK)
+
+    
 
 
 
 @api_view(["POST"])
 def register(request):
-    user_name = request.session.get("user_name")
+    #user_name = request.session.get("user_name")
+
+    #get = request.POST
+    #body = request.body
+    #headers = request.headers
+    #content_type = request.content_type
 
     '''
     request_body structure:
@@ -113,34 +158,47 @@ def register(request):
     password = request_body.get("password")
     user_name = request_body.get("user_name")
 
-    request.session["user_name"] = user_name
+    #request.session["user_name"] = user_name
 
     try:
         auth_response = auth.create_user_with_email_and_password(email, password)
+        id_token = auth_response["idToken"]
+        refresh_token = auth_response["refreshToken"]
+        expires_in = auth_response["expiresIn"]
         user_id = auth_response["localId"]
+        
         user_name = db.child("users").child(user_id).child("user_name").set(user_name)
         
-        request.session["user_id"] = user_id
-        request.session["user_name"] = user_name
-        request.session["user_email"] = email
+        #request.session["user_id"] = user_id
+        #request.session["user_name"] = user_name
+        #equest.session["user_email"] = email
 
-        Response({
+        response = Response({
             "success": True,
-            "message": "USER ACCOUNT CREATED SUCCESSFULLY"
+            "message": "USER ACCOUNT CREATED SUCCESSFULLY",
+            "user_name": user_name,
+            "id_token": id_token,
+            "expires_in": expires_in
         }, status=status.HTTP_200_OK)
+
+        response.set_cookie("refresh_token", value=refresh_token, httponly=True)
+
+        return response
     
     except Exception as e:
+        print("Exception: ", e)
 
+        message = json.loads(e.strerror).get("error").get("message")
+        
         return Response({
             "success": False,
-            "error": "SIGN IN ERROR",
+            "message": f"SIGN IN ERROR -> {message}",
         }, status=status.HTTP_400_BAD_REQUEST)
         
 
 
 @api_view(["POST"]) # this line gives the same effect as: if request.method == "POST"; login() function accepts only requests with POST method
 def login(request):
-    user_name = request.session.get("user_name")
     
     '''
     request_body structure:
@@ -154,37 +212,51 @@ def login(request):
     request_body = request.data
     typ = type(request_body)
 
-    request_body = {key.lower(): value for key, value in request_body.items()}
+    #request_body = {key.lower(): value for key, value in request_body.items()}
 
     email = request_body.get("email")
     password = request_body.get("password")
 
     try:
         auth_response = auth.sign_in_with_email_and_password(email, password)
+        id_token = auth_response["idToken"]
+        refresh_token = auth_response["refreshToken"]
+        expires_in = auth_response["expiresIn"]
         user_id = auth_response["localId"]
+        
         user_name = db.child("users").child(user_id).child("user_name").get().val()
         
-        request.session["user_id"] = user_id
-        request.session["user_name"] = user_name
-        request.session["user_email"] = email
+        #request.session["user_id"] = user_id
+        #request.session["user_name"] = user_name
+        #request.session["user_email"] = email
         
-        return Response({
+        response = Response({
             "success": True,
-            "message": "LOGGED IN SUCCESSFULLY"
+            "message": "LOGGED IN SUCCESSFULLY",
+            "user_name": user_name,
+            "id_token": id_token,
+            "expires_in": expires_in
         }, status=status.HTTP_200_OK) 
         
+        response.set_cookie("refresh_token", value=refresh_token, httponly=True)
+
+        return response
+
     except requests.exceptions.HTTPError as e:
-        
+        print("Exception: ", e)
+
         return Response({
             "success": False,
-            "error": "INVALID LOGIN CREDENTIALS",
+            "message": "INVALID LOGIN CREDENTIALS",
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
 
 @api_view(["POST"])
+@protected_view
 def create(request):
-    user_name = request.session.get("user_name")
+    
+    #user_name = request.session.get("user_name")
 
     '''
     fetching request_body (json string) from client request and convert it to dict; 
@@ -208,7 +280,7 @@ def create(request):
     game_id = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
     poland_time = datetime.now(ZoneInfo("Europe/Warsaw"))
     formatted_time = poland_time.strftime("%Y-%m-%d %H:%M:%S %Z%z")
-    user_id = request.session.get("user_id") 
+    user_id = getattr(request, "user_id", None) 
     play_count = 0
 
     request_body.upadate({
@@ -229,35 +301,35 @@ def create(request):
 
         return Response({
             "success": False,
-            "error": "DATABASE WRITE ERROR",
+            "message": "DATABASE WRITE ERROR",
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
 
 @api_view(["GET"])
 def find_category(request, category):
-    user_name = request.session.get("user_name")
+    #user_name = request.session.get("user_name")
 
-    get = request.GET
-    body = request.body
-    headers = request.headers
-    content_type = request.content_type
+    #get = request.GET
+    #body = request.body
+    #headers = request.headers
+    #content_type = request.content_type
     
     try:
         if not category == "all":
             games_from_category = db.child("games").order_by_child("category").equal_to(category).get().val()
-            games_from_category_list = list(games_from_category.items())
         else:
-            games_from_caregory = db.child("games").get.val()
-            games_from_category_list = list(games_from_caregory.items())
+            games_from_category = db.child("games").get.val()
+        
+        games_from_category_list = list(games_from_category.items())   
 
     except AttributeError as e: # Error which occurs when frontend is referring to unexisting category in database
-        games_from_caregory = None
+        games_from_category = None
         print("Exception: ", e)
 
         return Response({
             "success": False,
-            "error": f"THERE IS NO SUCH CATEGORY: {category} IN DATABASE"
+            "message": f"THERE IS NO SUCH CATEGORY: {category} IN DATABASE"
         }, status=status.HTTP_400_BAD_REQUEST)
         
     except Exception as e:
@@ -265,7 +337,7 @@ def find_category(request, category):
 
         return Response({
             "success": False,
-            "error": f"DATABASE READ ERROR FROM CATEGORY: {category}",
+            "message": f"DATABASE READ ERROR FROM CATEGORY: {category}",
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     
@@ -274,13 +346,13 @@ def find_category(request, category):
     page_number = request.query_params.get("page", 1)  # Get the page number from the request, default is 1
     '''
     When page_number received from query params exceeds num_pages calculated by paginator, paginator.get_page(page_number) will return page_obj adequate to num_pages value.
-    When page_nmber received from query params is not a number (e.g. "?page=3z") paginator.get_page(page_number) will return page_obj corresponding to first page.
+    When page_nmber received from query params is not a number (e.g. ?page=3z) paginator.get_page(page_number) will return page_obj corresponding to first page.
     
     '''
     page_obj = paginator.get_page(page_number)   
 
     response_data = {
-        'user_name': user_name, 
+        #'user_name': user_name, 
         'category': category, 
         'count': paginator.count,
         'total_pages': paginator.num_pages,

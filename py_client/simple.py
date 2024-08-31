@@ -27,9 +27,10 @@ db = firebase.database()
 
 endpoint1 = 'http://localhost:8000/strona/find_category/Sports?xd=1'
 endpoint2 = 'http://localhost:8000/strona/get_game_by_id/effdggdfgdh/'
+endpoint3 = 'http://localhost:8000/strona/login/'
 
 
-get_response = requests.get(endpoint2, json={"email": "grzegorz@braun.com", "password": "korona"})
+get_response = requests.post(endpoint3, json={"email": "lech@adamus.com", "password": "lechadamus", "user_name": "dr_leszek"})
 
 print(type(get_response))
 
