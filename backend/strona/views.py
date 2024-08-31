@@ -96,12 +96,6 @@ def get_game_by_id(request, game_id):
 
 
 
-@api_view(['POST'])
-def make_comment(request, game_id):
-    pass
-
-
-
 @api_view(["POST"])
 @protected_view
 def logout(request):
@@ -132,8 +126,6 @@ def logout(request):
     }, status=status.HTTP_200_OK)
 
     
-
-
 
 @api_view(["POST"])
 def register(request):
@@ -306,6 +298,7 @@ def create(request):
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
+
 # Dodawanie komentarzy powinno być możliwe tylko po zalogowaniu
 @api_view(['POST'])
 def add_comment(request, game_id):
@@ -331,6 +324,7 @@ def add_comment(request, game_id):
     return Response(request_body)
 
 
+
 @api_view(['GET'])
 def get_game_comments(request, game_id):
     try:
@@ -346,10 +340,6 @@ def get_game_comments(request, game_id):
         }, status=status.HTTP_400_BAD_REQUEST)
         
     
-
-        
-
-
 
 @api_view(["GET"])
 def find_category(request, category):
