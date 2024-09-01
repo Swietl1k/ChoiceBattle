@@ -132,7 +132,7 @@ function SignUp () {
 
     return (
         <>
-            <Navbar />
+            <Navbar onSearchTerm={() => {}}/>
             <div className="container">
                 <div className="su-header">
                     <div className="text">Sign Up</div>

@@ -1,23 +1,39 @@
 import "./Navbar.css";
 import logo from "./logo.png";
 import { FaRegUserCircle } from "react-icons/fa";
-import { Link } from "react-router-dom"; // Importowanie Link z react-router-dom
-import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 interface Props {
-  username?: string | null;
   onSearchTerm: (item: string) => void;
 }
 
-function Navbar({ username, onSearchTerm }: Props) {
+function Navbar({onSearchTerm }: Props) {
   const [searchInput, setSearchInput] = useState("");
+  const [username, setUsername] = useState<string | null>(null);
 
-  // Pozycje menu ustawione bezpośrednio w komponencie Navbar z odpowiednimi ścieżkami
+
+  const navigate = useNavigate();
+
+
+  useEffect(() => {
+    // Sprawdź, czy token JWT jest w localStorage
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const storedUsername = localStorage.getItem('username');
+
+    if (token && storedUsername) {
+      setUsername(storedUsername); // Ustaw nazwę użytkownika, jeśli token istnieje
+    }
+  }, []);
+
   const items = [
     { name: "Home", path: "/" },
     { name: "Highlights", path: "/highlights" },
-    { name: "Create", path: "/create" },
   ];
+
+  if (username) {
+    items.push({ name: "Create", path: "/create" });
+  }
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput(e.target.value);
@@ -26,6 +42,13 @@ function Navbar({ username, onSearchTerm }: Props) {
   const handleSearchClick = (e: React.FormEvent) => {
     e.preventDefault(); // Zablokowanie domyślnego zachowania formularza
     onSearchTerm(searchInput); // Przekazanie wartości inputa do Home.tsx
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Usuń token JWT
+    localStorage.removeItem('username'); // Usuń nazwę użytkownika
+    setUsername(null); // Zresetuj stan użytkownika
+    navigate('/'); // Przekieruj na stronę główną
   };
 
   return (
@@ -78,9 +101,9 @@ function Navbar({ username, onSearchTerm }: Props) {
                   />
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link" to="/sign-up">
+                <span className="nav-link" onClick={handleLogout} style={{ cursor: "pointer" }}>
                     Sign Out
-                  </Link>
+                  </span>
                 </li>
               </>
             ) : (
