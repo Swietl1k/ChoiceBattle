@@ -6,7 +6,6 @@ import MainContent from "../components/MainContent";
 function Home() {
 
 
-  const categories = ["All", "Food", "Sport", "Animals", "Gaming", "Nature"];
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -21,7 +20,7 @@ function Home() {
   return (
     <>
       <Navbar onSearchTerm={handleSearchTerm} />
-      <CategoryList items={categories} onSelectItem={handleSelectItem} />
+      <CategoryList onSelectItem={handleSelectItem} />
       <MainContent
         selectedCategory={selectedCategory}
         searchTerm={searchTerm}

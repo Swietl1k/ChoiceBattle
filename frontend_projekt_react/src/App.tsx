@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Home from "./pages/Home";
 import SignUp from "./pages/SignUp";
 import GameDetails from "./pages/GameDetails";
+import Create from "./pages/Create";
 
 function App() {
   return (
@@ -19,6 +20,8 @@ function App() {
         <Route path="/sign-up" element={<SignUp />} />
 
         <Route path="/:category/:id" element={<GameDetails />} />
+
+        <Route path="/create" element={<Create/>} />
       </Routes>
     </BrowserRouter>
   );

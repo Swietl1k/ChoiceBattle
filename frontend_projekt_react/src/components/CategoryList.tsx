@@ -6,10 +6,10 @@ import SportPNG from "./photos/SportPNG.png";
 import AnimalsPNG from "./photos/AnimalsPNG.png";
 import GamingPNG from "./photos/GamingPNG.png";
 import NaturePNG from "./photos/NaturePNG.png";
+import { categories } from "../components/categories";
 //import logo from "./Logo_2.png";
 
 interface Props {
-  items: string[];
   onSelectItem: (item: string) => void;
 }
 
@@ -22,12 +22,12 @@ const images: { [key: string]: string } = {
   Nature: NaturePNG,
 };
 
-function CategoryList({ items, onSelectItem }: Props) {
+function CategoryList({onSelectItem }: Props) {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   return (
     <ul className="list-group custom-list-group fixed">
-      {items.map((item, index) => (
+      {categories.map((item, index) => (
         <li
           className={
             selectedIndex === index

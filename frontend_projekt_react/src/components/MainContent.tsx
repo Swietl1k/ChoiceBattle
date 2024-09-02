@@ -24,7 +24,7 @@ function MainContent({ selectedCategory, searchTerm }: Props) {
   const navigate = useNavigate();
 
   const fetchAPI = async () => {
-    const response = await axios.get("http://127.0.0.1:8080/api/games");
+    const response = await axios.get("http://127.0.0.1:5000/api/games");
     setGames(response.data.games);
   };
 
