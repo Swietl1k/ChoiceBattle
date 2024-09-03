@@ -5,23 +5,26 @@ import Login from "./pages/Login";
 import Home from "./pages/Home";
 import SignUp from "./pages/SignUp";
 import GameDetails from "./pages/GameDetails";
-import Create from "./pages/Create";
+import Create from "./pages/CreateFirstPage";
+import CreateSecondPage from "./pages/CreateSecondPage";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Renderowanie strony głównej */}
         <Route path="/" element={<Home />} />
 
-        {/* Renderowanie strony logowania */}
         <Route path="/login" element={<Login />} />
 
         <Route path="/sign-up" element={<SignUp />} />
 
         <Route path="/:category/:id" element={<GameDetails />} />
 
-        <Route path="/create" element={<Create/>} />
+        <Route path="/create-one" element={<Create/>} />
+
+        <Route path="/create-two" element={<CreateSecondPage/>} />
+
+        <Route path="*" element={<h1>Not Found</h1>} />
       </Routes>
     </BrowserRouter>
   );

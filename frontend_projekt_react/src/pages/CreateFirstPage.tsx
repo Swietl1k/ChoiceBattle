@@ -1,7 +1,7 @@
 import Navbar from "../components/Navbar";
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import "./Create.css";
+import "./CreateFirstPage.css";
 import { categories } from "../components/categories";
 
 function Create() {
@@ -12,19 +12,24 @@ function Create() {
     const navigate = useNavigate();
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-            setImage(e.target.files[0]);
+        const file = e.target.files?.[0];
+        if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
+            setImage(file);
             setImageUploaded(true);
+        } else {
+            alert('Please upload an image in JPEG or PNG format.');
         }
     };
 
     const handleNextPage = () => {
-        navigate('/page-two', { state: { category, title, image } });
+        navigate('/create-two', { state: { category, title, image } });
     };
 
-    const handleNavigation = (path: string) => {
-        navigate(path);
-    };
+    const handleImageRemove = () => {
+        setImage(null);
+        setImageUploaded(false);
+    };   
+
 
     return (
         <div>
@@ -33,7 +38,7 @@ function Create() {
                 <div className="left-container">
                     <div className="navigation-buttons">
                         <button className="active-button" >Step 1</button>
-                        <button className="step-two-button" onClick={() => handleNavigation('/page-two')}>Step 2</button>
+                        <button className="step-two-button" onClick={handleNextPage}>Step 2</button>
                     </div>
                     <div className="lo-header">
                         <div className="text">Create Ranking - Step 1</div>
@@ -44,10 +49,11 @@ function Create() {
                             <select
                                 className="select-input"
                                 value={category}
-                                onChange={(e) => setCategory(e.target.value)}
-                            >
+                                onChange={(e) => setCategory(e.target.value)}>
                                 <option value="">Select a category</option>
-                                {categories.map((cat) => (
+                                {categories
+                                .filter(cat=>cat !="All")
+                                .map((cat) => (
                                     <option key={cat} value={cat}>
                                         {cat}
                                     </option>
@@ -71,6 +77,7 @@ function Create() {
                                 id="file-upload"
                                 type="file"
                                 className="file-input"
+                                accept="image/jpeg, image/png"
                                 onChange={handleImageChange}
                             />
                             
@@ -80,14 +87,17 @@ function Create() {
                 </div>
                 <div className="right-container">
                     <h2>Preview</h2>
-                    <p><strong>Category:</strong> {category}</p>
-                    <p><strong>Title:</strong> {title}</p>
+                    <p>Category: <strong>{category}</strong></p>
+                    <p>Title: <strong>{title}</strong></p>
                     {!imageUploaded && (
-                        <p><strong>Image:</strong></p>
+                        <p>Image:</p>
                     )}
                     {image && (
-                        <div>
+                        <div className="image-and-button">
                             <img src={URL.createObjectURL(image)} alt="Preview" className="image-preview" />
+                            <button className="remove-button" onClick={handleImageRemove}>
+                                Remove Image
+                            </button>
                         </div>
                     )}
                 </div>

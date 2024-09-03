@@ -32,7 +32,7 @@ function Navbar({onSearchTerm }: Props) {
   ];
 
   if (username) {
-    items.push({ name: "Create", path: "/create" });
+    items.push({ name: "Create", path: "/create-one" });
   }
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
