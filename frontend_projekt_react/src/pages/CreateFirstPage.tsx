@@ -1,5 +1,5 @@
 import Navbar from "../components/Navbar";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "./CreateFirstPage.css";
 import { categories } from "../components/categories";
@@ -9,6 +9,7 @@ function Create() {
     const [title, setTitle] = useState('');
     const [image, setImage] = useState<File | null>(null);
     const [imageUploaded, setImageUploaded] = useState(false);
+
     const navigate = useNavigate();
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -22,14 +23,64 @@ function Create() {
     };
 
     const handleNextPage = () => {
-        navigate('/create-two', { state: { category, title, image } });
+        if (image) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64Image = reader.result as string;
+                navigate('/create-two', { state: { category, title, image: base64Image } });
+            };
+            reader.readAsDataURL(image);
+        } else {
+            navigate('/create-two', { state: { category, title, image: null } });
+        }
     };
 
     const handleImageRemove = () => {
         setImage(null);
         setImageUploaded(false);
-    };   
+        localStorage.removeItem('savedImage');
+    };
+    
+    useEffect(() => {
+        const savedCategory = localStorage.getItem('savedCategory');
+        const savedTitle = localStorage.getItem('savedTitle');
+        const savedImage = localStorage.getItem('savedImage');
 
+        if (savedCategory) {
+            setCategory(savedCategory);
+        }
+        if (savedTitle) {
+            setTitle(savedTitle);
+        }
+        if (savedImage) {
+            fetch(savedImage) 
+              .then(res => res.blob()) 
+              .then(blob => {
+                  const file = new File([blob], 'savedImage', { type: 'image/jpeg' });
+                  setImage(file);
+                  setImageUploaded(true);
+              });
+        }
+    }, []);
+
+    // Zapisz dane do localStorage przy każdej zmianie
+    useEffect(() => {
+        localStorage.setItem('savedCategory', category);
+    }, [category]);
+
+    useEffect(() => {
+        localStorage.setItem('savedTitle', title);
+    }, [title]);
+
+    useEffect(() => {
+        if (image) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                localStorage.setItem('savedImage', reader.result as string); // Zapisz obraz w base64
+            };
+            reader.readAsDataURL(image); // Konwertuj obraz na base64
+        }
+    }, [image]);
 
     return (
         <div>

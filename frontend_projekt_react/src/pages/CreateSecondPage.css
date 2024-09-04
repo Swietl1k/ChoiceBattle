@@ -22,12 +22,17 @@
     display: flex;
     flex-direction: column;
     margin: 0vh 6vw 3vh 6vw;
-    padding: 3vh;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
     overflow-y: auto;
     max-height: calc(100vh - 160px);
+}
+
+.right-container-second h2 {
+    font-size: 50px;
+    color: #ffffff;
+    margin-bottom: 20px;
 }
 
 .image-preview-second {
@@ -38,31 +43,78 @@
     object-fit: cover;
 }
 
-.items-container-second {
+.items-container {
     width: 100%;
 }
 
-.item-preview-second {
+.item-title-image-remove {
     display: flex;
     align-items: center;
     margin-bottom: 2vh;
+    justify-content: space-between;
+    padding: 5px;
+    margin-right: 1vw;
+
 }
 
-.image-preview-second {
-    width: 200px;
-    height: 200px;
-    border-radius: 10px;
-    object-fit: cover;
-    margin-right: 2vh;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.item-title-second {
+.item-title {
     font-size: 25px;
     color: #ffffff;
     word-wrap: break-word;
-    max-width: calc(100% - 120px); 
+    max-width: calc(60%); 
 }
+
+.item-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 10px;
+    object-fit: cover;
+    margin-right: 2vh;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);   
+}
+
+.item-remove {
+    background: transparent;
+    cursor: pointer;
+    border: none;
+    margin-left: auto;
+}
+
+.cross-icon {
+    color: red;  /* Ustawia czerwony kolor dla ikony X */
+    font-size: 32px;
+}
+
+
+.modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.modal-content {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+}
+
+.close {
+    position: absolute;
+    top: 20px;
+    right: 35px;
+    color: #ffffff;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
 
 .navigation-buttons-second {
     display: flex;
@@ -221,33 +273,4 @@
 .submit-add-button:hover , .submit-finish-button:hover {
     background-color: #009860;
     transform: scale(1.05);
-}
-
-.modal {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.8);
-}
-
-.modal-content {
-    max-width: 90%;
-    max-height: 90%;
-}
-
-.close {
-    position: absolute;
-    top: 20px;
-    right: 35px;
-    color: #ffffff;
-    font-size: 40px;
-    font-weight: bold;
-    cursor: pointer;
 }
