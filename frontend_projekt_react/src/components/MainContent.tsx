@@ -10,6 +10,7 @@ type Game = {
   category: string;
   image: string;
   id: number;
+  creator: string;
 };
 
 interface Props {
@@ -24,8 +25,12 @@ function MainContent({ selectedCategory, searchTerm }: Props) {
   const navigate = useNavigate();
 
   const fetchAPI = async () => {
-    const response = await axios.get("http://127.0.0.1:5000/api/games");
-    setGames(response.data.games);
+    try {
+      const response = await axios.get("http://127.0.0.1:8080/api/games");
+      setGames(response.data.games);
+    } catch (error) {
+      console.error("Error fetching games list:", error);
+    }
   };
 
   useEffect(() => {
@@ -52,8 +57,10 @@ function MainContent({ selectedCategory, searchTerm }: Props) {
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
-  const handleCardClick = (category: string, id: number) => {
-    navigate(`/${category}/${id}`);
+  const handleCardClick = (game: Game) => {
+    navigate(`/${game.category}/${game.id}`, {
+      state: { game },
+    });
   };
 
   return (
@@ -64,7 +71,7 @@ function MainContent({ selectedCategory, searchTerm }: Props) {
             <div
               className="card h"
               style={{ width: "15vw", height: "35vh", cursor: "pointer" }}
-              onClick={() => handleCardClick(game.category, game.id)}
+              onClick={() => handleCardClick(game)}
             >
               <img src={game.image} className="card-img-top" alt="..." />
               <div className="card-body">

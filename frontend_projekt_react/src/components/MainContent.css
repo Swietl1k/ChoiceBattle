@@ -6,6 +6,9 @@
 }
 
 .card-img-top{
-    height: 60% !important;
-    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 60% !important;
+    height: auto !important;
+    width: auto !important;
+    /* object-fit: contain; */
 }
