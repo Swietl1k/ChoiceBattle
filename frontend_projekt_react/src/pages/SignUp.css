@@ -11,6 +11,10 @@
     height:100vh-100px !important;
     border-radius: 10px;
 }
+.container .input input[type="text"] {
+    color: white !important; 
+    font-size: 20px;
+}
 
 .su-header{
     display: flex;
@@ -108,11 +112,11 @@
 }
 
 .valid {
-    border: 5px solid green;
-    background: #005315;
+    border: 5px solid green !important;
+    background: #005315 !important;
 }
 
 .invalid {
-    background:#5A5A5A;
-    border: 5px solid #3a3a3a;
+    background:#5A5A5A !important;
+    border: 5px solid #3a3a3a !important;
 }

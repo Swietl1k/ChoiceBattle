@@ -6,8 +6,8 @@ import { categories } from "../components/categories";
 
 function Create() {
     const [category, setCategory] = useState('');
-    const [title, setTitle] = useState('');
-    const [image, setImage] = useState<File | null>(null);
+    const [rankingTitle, setrankingTitle] = useState('');
+    const [rankingImage, setrankingImage] = useState<File | null>(null);
     const [imageUploaded, setImageUploaded] = useState(false);
 
     const navigate = useNavigate();
@@ -15,7 +15,7 @@ function Create() {
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
-            setImage(file);
+            setrankingImage(file);
             setImageUploaded(true);
         } else {
             alert('Please upload an image in JPEG or PNG format.');
@@ -23,20 +23,20 @@ function Create() {
     };
 
     const handleNextPage = () => {
-        if (image) {
+        if (rankingImage) {
             const reader = new FileReader();
             reader.onloadend = () => {
                 const base64Image = reader.result as string;
-                navigate('/create-two', { state: { category, title, image: base64Image } });
+                navigate('/create-two', { state: { category, rankingTitle, rankingImage: base64Image } });
             };
-            reader.readAsDataURL(image);
+            reader.readAsDataURL(rankingImage);
         } else {
-            navigate('/create-two', { state: { category, title, image: null } });
+            navigate('/create-two', { state: { category, rankingTitle, rankingImage: null } });
         }
     };
 
     const handleImageRemove = () => {
-        setImage(null);
+        setrankingImage(null);
         setImageUploaded(false);
         localStorage.removeItem('savedImage');
     };
@@ -50,14 +50,14 @@ function Create() {
             setCategory(savedCategory);
         }
         if (savedTitle) {
-            setTitle(savedTitle);
+            setrankingTitle(savedTitle);
         }
         if (savedImage) {
             fetch(savedImage) 
               .then(res => res.blob()) 
               .then(blob => {
                   const file = new File([blob], 'savedImage', { type: 'image/jpeg' });
-                  setImage(file);
+                  setrankingImage(file);
                   setImageUploaded(true);
               });
         }
@@ -69,18 +69,18 @@ function Create() {
     }, [category]);
 
     useEffect(() => {
-        localStorage.setItem('savedTitle', title);
-    }, [title]);
+        localStorage.setItem('savedTitle', rankingTitle);
+    }, [rankingTitle]);
 
     useEffect(() => {
-        if (image) {
+        if (rankingImage) {
             const reader = new FileReader();
             reader.onloadend = () => {
                 localStorage.setItem('savedImage', reader.result as string); // Zapisz obraz w base64
             };
-            reader.readAsDataURL(image); // Konwertuj obraz na base64
+            reader.readAsDataURL(rankingImage); // Konwertuj obraz na base64
         }
-    }, [image]);
+    }, [rankingImage]);
 
     return (
         <div>
@@ -115,8 +115,8 @@ function Create() {
                             <input
                                 type="text"
                                 className="text-input"
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
+                                value={rankingTitle}
+                                onChange={(e) => setrankingTitle(e.target.value)}
                                 placeholder="Enter ranking title"
                             />
                         </div>
@@ -139,13 +139,13 @@ function Create() {
                 <div className="right-container">
                     <h2>Preview</h2>
                     <p>Category: <strong>{category}</strong></p>
-                    <p>Title: <strong>{title}</strong></p>
+                    <p>Title: <strong>{rankingTitle}</strong></p>
                     {!imageUploaded && (
                         <p>Image:</p>
                     )}
-                    {image && (
+                    {rankingImage && (
                         <div className="image-and-button">
-                            <img src={URL.createObjectURL(image)} alt="Preview" className="image-preview" />
+                            <img src={URL.createObjectURL(rankingImage)} alt="Preview" className="image-preview" />
                             <button className="remove-button" onClick={handleImageRemove}>
                                 Remove Image
                             </button>

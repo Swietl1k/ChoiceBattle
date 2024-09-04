@@ -26,7 +26,7 @@ function MainContent({ selectedCategory, searchTerm }: Props) {
 
   const fetchAPI = async () => {
     try {
-      const response = await axios.get("http://127.0.0.1:8080/api/games");
+      const response = await axios.get("http://127.0.0.1:5000/api/games");
       setGames(response.data.games);
     } catch (error) {
       console.error("Error fetching games list:", error);
