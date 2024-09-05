@@ -37,14 +37,14 @@ function Create() {
 
     const handleImageRemove = () => {
         setrankingImage(null);
-        setImageUploaded(false);
-        localStorage.removeItem('savedImage');
+        setImageUploaded(false);    
+        sessionStorage.removeItem('savedImage');
     };
     
     useEffect(() => {
-        const savedCategory = localStorage.getItem('savedCategory');
-        const savedTitle = localStorage.getItem('savedTitle');
-        const savedImage = localStorage.getItem('savedImage');
+        const savedCategory = sessionStorage.getItem('savedCategory');
+        const savedTitle = sessionStorage.getItem('savedTitle');
+        const savedImage = sessionStorage.getItem('savedImage');
 
         if (savedCategory) {
             setCategory(savedCategory);
@@ -63,22 +63,22 @@ function Create() {
         }
     }, []);
 
-    // Zapisz dane do localStorage przy każdej zmianie
+   
     useEffect(() => {
-        localStorage.setItem('savedCategory', category);
+        sessionStorage.setItem('savedCategory', category);
     }, [category]);
 
     useEffect(() => {
-        localStorage.setItem('savedTitle', rankingTitle);
+        sessionStorage.setItem('savedTitle', rankingTitle);
     }, [rankingTitle]);
 
     useEffect(() => {
         if (rankingImage) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                localStorage.setItem('savedImage', reader.result as string); // Zapisz obraz w base64
+                sessionStorage.setItem('savedImage', reader.result as string); 
             };
-            reader.readAsDataURL(rankingImage); // Konwertuj obraz na base64
+            reader.readAsDataURL(rankingImage);
         }
     }, [rankingImage]);
 

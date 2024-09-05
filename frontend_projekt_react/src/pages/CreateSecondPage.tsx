@@ -6,11 +6,11 @@ import "./CreateSecondPage.css";
 import { ImCross } from "react-icons/im";
 
 function CreateSecondPage() {
-    const location = useLocation();  // Użycie useLocation do odbioru danych z 1. strony
-    const { category, rankingTitle, rankingImage } = location.state;  // Odbieranie danych przesłanych z 1. strony
+    const location = useLocation(); 
+    const { category, rankingTitle, rankingImage } = location.state; 
 
 
-    // Zmiana nazwy na itemTitle i itemImage
+
     const [itemTitle, setItemTitle] = useState('');
     const [itemImage, setItemImage] = useState<File | null>(null);
     const [imageUploaded, setImageUploaded] = useState(false);
@@ -48,7 +48,7 @@ function CreateSecondPage() {
     };
 
     const handleImageClick = (itemImage: File) => {
-        // Otwórz modal i ustaw obraz w oryginalnym rozmiarze
+
         setModalImage(URL.createObjectURL(itemImage));
         setIsModalOpen(true);
     };
@@ -70,7 +70,6 @@ function CreateSecondPage() {
         }
 
         try {
-            // Pobierz token z localStorage lub sessionStorage
             const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
             if (!token) {
@@ -88,27 +87,31 @@ function CreateSecondPage() {
                 });
             }
 
-            // Konwertuj przedmioty na format JSON
+    
             const itemsData = {
-                category,  // Przesyłanie kategorii
-                rankingTitle,  // Przesyłanie tytułu rankingu
-                rankingImage: rankingImageBase64,  // Przesyłanie obrazu rankingu w Base64
+                category,  
+                rankingTitle, 
+                rankingImage: rankingImageBase64,  
                 items: items.map(item => ({
                     title: item.itemTitle,
                     image: item.itemImage ? URL.createObjectURL(item.itemImage) : null
                 }))
             };
 
-            // Wykonaj żądanie POST z tokenem w nagłówkach
             const response = await axios.post('http://localhost:5000/api/submit-items', itemsData, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,  // Token JWT
+                    'Authorization': `Bearer ${token}`,
                 },
             });
 
             if (response.data.success) {
                 alert('Items successfully submitted');
+
+                sessionStorage.removeItem('savedCategory');
+                sessionStorage.removeItem('savedTitle');
+                sessionStorage.removeItem('savedImage');
+
                 navigate('/');
             } else {
                 alert('Failed to submit items');

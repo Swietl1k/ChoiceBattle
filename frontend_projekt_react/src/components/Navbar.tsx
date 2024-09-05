@@ -17,12 +17,11 @@ function Navbar({onSearchTerm }: Props) {
 
 
   useEffect(() => {
-    // Sprawdź, czy token JWT jest w localStorage
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     const storedUsername = localStorage.getItem('username');
 
     if (token && storedUsername) {
-      setUsername(storedUsername); // Ustaw nazwę użytkownika, jeśli token istnieje
+      setUsername(storedUsername); 
     }
   }, []);
 
@@ -40,15 +39,15 @@ function Navbar({onSearchTerm }: Props) {
   };
 
   const handleSearchClick = (e: React.FormEvent) => {
-    e.preventDefault(); // Zablokowanie domyślnego zachowania formularza
-    onSearchTerm(searchInput); // Przekazanie wartości inputa do Home.tsx
+    e.preventDefault(); 
+    onSearchTerm(searchInput); 
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token'); // Usuń token JWT
-    localStorage.removeItem('username'); // Usuń nazwę użytkownika
-    setUsername(null); // Zresetuj stan użytkownika
-    navigate('/'); // Przekieruj na stronę główną
+    localStorage.removeItem('token'); 
+    localStorage.removeItem('username'); 
+    setUsername(null); 
+    navigate('/'); 
   };
 
   return (
@@ -77,19 +76,21 @@ function Navbar({onSearchTerm }: Props) {
               </li>
             ))}
           </ul>
-          <form className="d-flex" role="search" onSubmit={handleSearchClick}>
-            <input
-              className="form-control me-2"
-              type="search"
-              placeholder="Search"
-              aria-label="Search"
-              value={searchInput}
-              onChange={handleSearchChange}
-            />
-            <button className="btn btn-outline-success" type="submit">
-              Search
-            </button>
-          </form>
+          {username && (
+            <form className="d-flex" role="search" onSubmit={handleSearchClick}>
+              <input
+                className="form-control me-2"
+                type="search"
+                placeholder="Search"
+                aria-label="Search"
+                value={searchInput}
+                onChange={handleSearchChange}
+              />
+              <button className="btn btn-outline-success" type="submit">
+                Search
+              </button>
+            </form>
+          )}
           <ul className="navbar-nav navbar-right">
             {username ? (
               <>
