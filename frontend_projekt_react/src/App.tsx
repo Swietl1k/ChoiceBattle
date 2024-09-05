@@ -7,6 +7,7 @@ import SignUp from "./pages/SignUp";
 import GameDetails from "./pages/GameDetails";
 import Create from "./pages/CreateFirstPage";
 import CreateSecondPage from "./pages/CreateSecondPage";
+import Game from "./pages/Game";
 
 function App() {
   return (
@@ -20,9 +21,11 @@ function App() {
 
         <Route path="/:category/:id" element={<GameDetails />} />
 
-        <Route path="/create-one" element={<Create/>} />
+        <Route path="/:category/:id/play" element={<Game />} />
 
-        <Route path="/create-two" element={<CreateSecondPage/>} />
+        <Route path="/create-one" element={<Create />} />
+
+        <Route path="/create-two" element={<CreateSecondPage />} />
 
         <Route path="*" element={<h1>Not Found</h1>} />
       </Routes>
