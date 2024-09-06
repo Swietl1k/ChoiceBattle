@@ -22,16 +22,34 @@ function Create() {
         }
     };
 
+    const validateForm = () => {
+        if (!category) {
+            alert('Please select a category.');
+            return false;
+        }
+        if (!rankingTitle) {
+            alert('Please enter a ranking title.');
+            return false;
+        }
+        if (!rankingImage) {
+            alert('Please upload an image.');
+            return false;
+        }
+        return true;
+    };
+
     const handleNextPage = () => {
-        if (rankingImage) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64Image = reader.result as string;
-                navigate('/create-two', { state: { category, rankingTitle, rankingImage: base64Image } });
-            };
-            reader.readAsDataURL(rankingImage);
-        } else {
-            navigate('/create-two', { state: { category, rankingTitle, rankingImage: null } });
+        if (validateForm()) { 
+            if (rankingImage) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const base64Image = reader.result as string;
+                    navigate('/create-two', { state: { category, rankingTitle, rankingImage: base64Image } });
+                };
+                reader.readAsDataURL(rankingImage);
+            } else {
+                navigate('/create-two', { state: { category, rankingTitle, rankingImage: null } });
+            }
         }
     };
 
