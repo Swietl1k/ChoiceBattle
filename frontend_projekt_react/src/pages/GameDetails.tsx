@@ -1,5 +1,5 @@
 import "./GameDetails.css";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
@@ -22,6 +22,7 @@ function GameDetails() {
   const [pretendents, setPretendents] = useState<GameDetails[]>([]);
   const [comments, setComments] = useState<Comments[]>([]);
   const [newComment, setNewComment] = useState("");
+  const navigate = useNavigate();
 
   const location = useLocation();
   const { game } = location.state;
@@ -39,7 +40,7 @@ function GameDetails() {
 
     try {
       const responseComments = await axios.get(
-        "http://127.0.0.1:8082/api/comments"
+        "http://127.0.0.1:8082/api/games/1/comments"
       );
       setComments(responseComments.data.comments);
     } catch (error) {
@@ -70,21 +71,27 @@ function GameDetails() {
     setNewComment("");
   };
 
+  const handlePlayClick = () => {
+    navigate(`/${game.category}/${game.id}/play`, {
+      state: { game },
+    });
+  };
+
   return (
     <>
       <Navbar onSearchTerm={() => {}} />
-      <div className="grid-container">
-        <div className="box left-box">
+      <div className="grid-container gameDetails-grid-container">
+        <div className="box gameDetails-box left-box">
           <img className="details-img" src={game.image} alt="" />
           <h1 className="details-title">{game.title}</h1>
           <span className="details-description">{game.description}</span>
           <h3 className="details-creator">{game.creator}</h3>
-          <button className="details-button">
+          <button className="details-button" onClick={handlePlayClick}>
             {" "}
             <span className="details-span-play">Play</span>
           </button>
         </div>
-        <div className="box middle-box">
+        <div className="box gameDetails-box middle-box">
           {pretendents.map((pretendent, index) => (
             <div className="pretendent" key={index}>
               <h5 className="pretendent-title">
@@ -127,7 +134,7 @@ function GameDetails() {
           ))}
         </div>
 
-        <div className="box right-box">
+        <div className="box gameDetails-box right-box">
           <div className="comment-section">
             <form action="" className="comment-box" onSubmit={handleAddComment}>
               <div className="comment-username">zalogowany uzytkownik</div>

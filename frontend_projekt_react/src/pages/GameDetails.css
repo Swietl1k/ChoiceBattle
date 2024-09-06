@@ -1,4 +1,4 @@
-.grid-container{
+.gameDetails-grid-container{
     margin-left: 10vw;
     margin-right: 10vw;
     margin-top: 5vh;
@@ -43,7 +43,7 @@
 }
 
 
-.box{
+.gameDetails-box{
     /* border: 1px solid red; */
     flex-direction: column;
     justify-content: center;
