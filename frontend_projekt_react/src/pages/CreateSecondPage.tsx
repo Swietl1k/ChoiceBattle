@@ -1,5 +1,5 @@
 import Navbar from "../components/Navbar";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from "axios";
 import "./CreateSecondPage.css";
@@ -18,6 +18,10 @@ function CreateSecondPage() {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalImage, setModalImage] = useState<string | null>(null);
+
+    useEffect(() => {
+        console.log('Modal Open:', isModalOpen, 'Modal Image:', modalImage);
+    }, [isModalOpen, modalImage]);
 
     const navigate = useNavigate();
 
@@ -48,8 +52,9 @@ function CreateSecondPage() {
     };
 
     const handleImageClick = (itemImage: File) => {
-
-        setModalImage(URL.createObjectURL(itemImage));
+        const objectURL = URL.createObjectURL(itemImage);
+        console.log('Generated Object URL:', objectURL);
+        setModalImage(objectURL);
         setIsModalOpen(true);
     };
 

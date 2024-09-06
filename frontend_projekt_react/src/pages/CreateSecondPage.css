@@ -5,6 +5,36 @@
     padding: 3vh;
 }
 
+.modal {
+    display: flex !important;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(19, 17, 17, 0.8); /* Dodaje efekt przezroczystości */
+    overflow: auto; /* Pozwala na przewijanie, jeśli obrazek jest większy od ekranu */
+    padding: 20px; /* Dodaje odstęp między obrazem a brzegiem ekranu */
+}
+
+.modal-content {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    background-color: rgba(19, 17, 17, 0.8) !important; /* Zabezpiecza przed ucięciem obrazu i zachowuje proporcje */
+    border-radius: 8px; /* Opcjonalnie, dodaje zaokrąglenie krawędzi obrazu */
+}
+
+.close {
+    position: absolute;
+    top: 2vh;
+    right: 3vw;
+    font-size: 50px;
+    cursor: pointer;
+    color: white;
+    z-index: 1;
+}
+
 .left-container-second {
     display: flex;
     align-items: center;
@@ -83,36 +113,6 @@
 .cross-icon {
     color: red;  
     font-size: 32px;
-}
-
-
-.modal {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-}
-
-.modal-content {
-    max-width: 90%;
-    max-height: 90%;
-    object-fit: contain;
-}
-
-.close {
-    position: absolute;
-    top: 20px;
-    right: 35px;
-    color: #ffffff;
-    font-size: 40px;
-    font-weight: bold;
-    cursor: pointer;
 }
 
 

@@ -1,7 +1,7 @@
 import "./Game.css";
 import { useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import VersusIcon from "../components/versusIcon.png";
+//import VersusIcon from "../components/versusIcon.png";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
