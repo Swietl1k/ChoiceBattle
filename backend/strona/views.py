@@ -1,23 +1,22 @@
-import time, os
+import time, os 
 import firebase_admin.auth
 import pyrebase
 import random, string
 import requests
 import json
 import pyrebase
-import firebase_admin 
 from pathlib import Path
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.core.paginator import Paginator
-from firebase_admin import auth
 from .forms import *
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.response import Response
-from decorators import protected_view
+from .decorators import protected_view
+
  
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -144,7 +143,6 @@ def register(request):
         "user_name": <string: example>
     } 
     '''
-    
     request_body = request.data
     email = request_body.get("email")
     password = request_body.get("password")
@@ -191,7 +189,6 @@ def register(request):
 
 @api_view(["POST"]) # this line gives the same effect as: if request.method == "POST"; login() function accepts only requests with POST method
 def login(request):
-    
     '''
     request_body structure:
     {
@@ -200,15 +197,43 @@ def login(request):
     }
     
     '''
-    
     request_body = request.data
-    print(request_body)
-    typ = type(request_body)
-
-    #request_body = {key.lower(): value for key, value in request_body.items()}
-
     email = request_body.get("email")
     password = request_body.get("password")
+
+    try:
+        user_data = firebase_admin.auth.get_user_by_email(email)
+    except firebase_admin.auth.UserNotFoundError as e:
+        print("Exception: ", e)
+
+        return Response({
+            "success": False,
+            "message": "THERE IS NO SUCH USER"
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    except Exception as e:
+        print("Exception: ", e)
+        
+        return Response({
+            "success": False,
+            "message": "ERROR -> "
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    user_id = user_data.get("uid")
+    
+    
+    try:
+        firebase_admin.auth.revoke_refresh_tokens(user_id)
+    except Exception as e:
+        print("Exception: ", e)
+
+        message = e.args[0]
+
+        return Response({
+            "success": False,
+            "message": f"ERROR -> {message}"
+        },status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
     try:
         auth_response = auth.sign_in_with_email_and_password(email, password)
@@ -284,25 +309,28 @@ def create(request):
 
     try:
         db.child("games").child(game_id).set(request_body)
-
-        return Response({
-            "success": True,
-            "message": "GAME DATA ALLOCATED IN DATABASE SUCCESSFULLY"
-        }, status=status.HTTP_200_OK) 
-
     except Exception as e:
+        print("Exception: ", e)
 
         return Response({
             "success": False,
-            "message": "DATABASE WRITE ERROR",
+            "message": "DATABASE WRITE ERROR"
         }, status=status.HTTP_400_BAD_REQUEST)
+
+    return Response({
+        "success": True,
+        "message": "GAME DATA ALLOCATED IN DATABASE SUCCESSFULLY"
+    }, status=status.HTTP_200_OK)
 
 
 
 # Dodawanie komentarzy powinno być możliwe tylko po zalogowaniu
 @api_view(['POST'])
+@protected_view
 def add_comment(request, game_id):
-    user_id = request.session.get('user_id')
+    #user_id = request.session.get('user_id')
+
+    user_id = getattr(request, "user_id", None)
 
     # request_body:
     # {"comment": <string: example>}
@@ -313,15 +341,25 @@ def add_comment(request, game_id):
     formatted_time = poland_time.strftime("%Y-%m-%d %H:%M:%S %Z%z")
 
     request_body.update({
-            "date": formatted_time,
-            "game_id": game_id,
-            "user_id": user_id,
-        })
+        "date": formatted_time, 
+        "game_id": game_id, 
+        "user_id": user_id
+    })
     
-    db.child("comments").child(comment_id).set(request_body)
-    print(request_body)
+    try:
+        db.child("comments").child(comment_id).set(request_body)
+    except Exception as e:
+        print("Exception: ", e)
 
-    return Response(request_body)
+        return Response({
+            "success": False,
+            "message": "DATABASE WRITE ERROR"
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    return Response({
+        "success": True,
+        "message": "COMMENT CREATED SUCCESSFULLY"
+    }, status=status.HTTP_200_OK)
 
 
 
@@ -334,6 +372,8 @@ def get_game_comments(request, game_id):
         return Response(game_comments, status=status.HTTP_200_OK)
     
     except Exception as e:
+        print("Exception: ", e)
+
         return Response({
             "success": False,
             "error": "ERROR FETCHING COMMENTS FROM DATABASE",
@@ -376,7 +416,6 @@ def find_category(request, category):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     
-    
     paginator = Paginator(games_from_category_list, 2)  # 2 items per page
     page_number = request.query_params.get("page", 1)  # Get the page number from the request, default is 1
     '''
@@ -396,7 +435,6 @@ def find_category(request, category):
         'previous_page': page_obj.previous_page_number() if page_obj.has_previous() else None,
         'results': dict(page_obj.object_list)
     }    
-
 
     return Response(response_data, status=status.HTTP_200_OK)
 
