@@ -16,8 +16,10 @@ function Game() {
   const { game } = location.state;
 
   const [gameData, setGameData] = useState<gameOptions[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const fetchAPI = async () => {
+    setLoading(true);
     try {
       // const response = await axios.get(
       //   `http://127.0.0.1:8080/api/games/${game.id}/play`
@@ -29,6 +31,8 @@ function Game() {
       setGameData(response.data.options);
     } catch (error) {
       console.error("Error fetching game data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -38,6 +42,7 @@ function Game() {
 
   const handleOptionChoice = async (gameOption: gameOptions) => {
     console.log(`Option clicked: ${gameOption.id}`);
+    setLoading(true);
     try {
       const response = await axios.post(
         "http://127.0.0.1:8084/api/games/option",
@@ -49,6 +54,8 @@ function Game() {
       fetchAPI();
     } catch (error) {
       console.error("Error sending option choice to backend:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,39 +64,53 @@ function Game() {
       <Navbar onSearchTerm={() => {}} />
       <div className="game-container">
         <div className="game-title">{game.title}</div>
-        <div className="game-round">Rounds of 8 1/4</div>
-        <div className="grid-container game-grid-container">
-          <div
-            className="box game-box"
-            onClick={() => handleOptionChoice(gameData[0])}
-          >
-            <div className="game-image-box game-left-image">
-              {gameData[0] && (
-                <>
-                  <img src={gameData[0].image} alt="" className="game-image" />
-                  <h2 className="game-box-title">{gameData[0].title}</h2>
-                </>
-              )}
+        {loading ? (
+          <div className="loading">Loading...</div>
+        ) : (
+          <>
+            <div className="game-round">Rounds of 8 1/4</div>
+            <div className="grid-container game-grid-container">
+              <div
+                className="box game-box"
+                onClick={() => handleOptionChoice(gameData[0])}
+              >
+                <div className="game-image-box game-left-image">
+                  {gameData[0] && (
+                    <>
+                      <img
+                        src={gameData[0].image}
+                        alt=""
+                        className="game-image"
+                      />
+                      <h2 className="game-box-title">{gameData[0].title}</h2>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="box game-box">
+                {" "}
+                <img src={VersusIcon} alt="" className="game-versusIcon" />{" "}
+              </div>
+              <div
+                className="box game-box"
+                onClick={() => handleOptionChoice(gameData[1])}
+              >
+                <div className="game-image-box game-right-image">
+                  {gameData[1] && (
+                    <>
+                      <img
+                        src={gameData[1].image}
+                        alt=""
+                        className="game-image"
+                      />
+                      <h2 className="game-box-title">{gameData[1].title}</h2>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="box game-box">
-            {" "}
-            <img src={VersusIcon} alt="" className="game-versusIcon" />{" "}
-          </div>
-          <div
-            className="box game-box"
-            onClick={() => handleOptionChoice(gameData[1])}
-          >
-            <div className="game-image-box game-right-image">
-              {gameData[1] && (
-                <>
-                  <img src={gameData[1].image} alt="" className="game-image" />
-                  <h2 className="game-box-title">{gameData[1].title}</h2>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </>
   );

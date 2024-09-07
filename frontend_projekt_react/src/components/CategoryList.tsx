@@ -6,6 +6,9 @@ import SportPNG from "./photos/SportPNG.png";
 import AnimalsPNG from "./photos/AnimalsPNG.png";
 import GamingPNG from "./photos/GamingPNG.png";
 import NaturePNG from "./photos/NaturePNG.png";
+import MusicPNG from "./photos/MusicPNG.png";
+import MoviePNG from "./photos/MoviePNG.png";
+import MotorizationPNG from "./photos/motorizationPNG.png";
 import { categories } from "../components/categories";
 //import logo from "./Logo_2.png";
 
@@ -20,9 +23,12 @@ const images: { [key: string]: string } = {
   Animals: AnimalsPNG,
   Gaming: GamingPNG,
   Nature: NaturePNG,
+  Music: MusicPNG,
+  Movies: MoviePNG,
+  Motorization: MotorizationPNG,
 };
 
-function CategoryList({onSelectItem }: Props) {
+function CategoryList({ onSelectItem }: Props) {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   return (
@@ -43,7 +49,7 @@ function CategoryList({onSelectItem }: Props) {
           <img
             src={images[item]}
             alt={images[item]}
-            style={{ marginRight: "10px", width: "15%" }}
+            style={{ marginRight: "10px", width: "12%" }}
           ></img>
           {item}
         </li>
