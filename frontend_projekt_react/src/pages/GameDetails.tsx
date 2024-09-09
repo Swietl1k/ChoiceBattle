@@ -25,14 +25,14 @@ function GameDetails() {
   const navigate = useNavigate();
   
   const idToken = localStorage.getItem('id_token') || sessionStorage.getItem('id_token');
-  const storedUsername = localStorage.getItem('username');
+  const storedUsername = localStorage.getItem('user_name');
 
   const location = useLocation();
   const { game } = location.state;
  
   const fetchAPI = async () => {
     try {
-      const responseDetails = await axios.get(`http://127.0.0.1:8000/strona/get_game_by_id/${game.id}`);
+      const responseDetails = await axios.get(`http://127.0.0.1:8000/strona/get_game_by_id/${game.id}/`);
       setPretendents(responseDetails.data.choice_data);
     } catch (error) {
       console.error("Error fetching game details:", error);
@@ -40,7 +40,7 @@ function GameDetails() {
  
     try {
       const responseComments = await axios.get(
-        `http://127.0.0.1:8000/strona/get_game_comments/${game.id}`
+        `http://127.0.0.1:8000/strona/get_game_comments/${game.id}/`
       );
       const transformedComments = Object.keys(responseComments.data).map(
         (key, index) => ({
