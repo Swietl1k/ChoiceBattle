@@ -75,10 +75,6 @@ function SignUp() {
                 // do usuniecia
                 const refreshToken = Cookies.get('refresh_token');
                 console.log(refreshToken);
-                if (refreshToken) {
-                    localStorage.setItem('refresh_token', refreshToken);
-                }
-                // do usuniecia
 
                 setUserName(""); 
                 setEmail("");
