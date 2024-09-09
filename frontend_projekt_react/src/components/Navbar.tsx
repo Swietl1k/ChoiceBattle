@@ -49,7 +49,7 @@ function Navbar({onSearchTerm }: Props) {
 
     if (idToken) {
       try {
-        await axios.get('http://127.0.0.1:8000/strona/logout/', {
+        await axios.post('http://127.0.0.1:8000/strona/logout/', {}, {
           headers: {
             Authorization: `Bearer ${idToken}`
           }

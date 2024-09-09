@@ -23,7 +23,10 @@ function GameDetails() {
   const [comments, setComments] = useState<Comments[]>([]);
   const [newComment, setNewComment] = useState("");
   const navigate = useNavigate();
- 
+  
+  const idToken = localStorage.getItem('id_token') || sessionStorage.getItem('id_token');
+  const storedUsername = localStorage.getItem('username');
+
   const location = useLocation();
   const { game } = location.state;
  
@@ -61,21 +64,40 @@ function GameDetails() {
     setNewComment(event.target.value);
   };
  
-  const handleAddComment = (event: React.FormEvent<HTMLFormElement>) => {
+  
+  const handleAddComment = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
  
     if (newComment.trim() === "") return;
  
     const newCommentData = {
       id: comments.length + 1,
-      username: "zalogowany uzytkownik",
+      username: storedUsername || "Anonimowy użytkownik",
       body: newComment,
     };
- 
-    setComments((prevComments) => [...prevComments, newCommentData]);
-    setNewComment("");
+    
+    console.log(idToken);
+
+    try {
+      setComments((prevComments) => [...prevComments, newCommentData]);
+      setNewComment("");
+      
+      await axios.post(`http://127.0.0.1:8000/strona/add_comment/${game.id}/`,
+        {
+          comment: newCommentData.body
+        }, {
+          headers: {Authorization: `Bearer ${idToken}`}
+        }
+      );
+
+    } catch (error) {
+      console.error("Error posting comment:", error);
+    }
   };
- 
+
+
+
+
   const handlePlayClick = () => {
     navigate(`/${game.category}/${game.id}/play`, {
       state: { game },
@@ -141,17 +163,23 @@ function GameDetails() {
  
         <div className="box gameDetails-box right-box">
           <div className="comment-section">
-            <form action="" className="comment-box" onSubmit={handleAddComment}>
-              <div className="comment-username">zalogowany uzytkownik</div>
-              <textarea
-                name="comment"
-                className="comment-textarea"
-                placeholder="Comment..."
-                value={newComment}
-                onChange={handleInputChange}
-              ></textarea>
-              <button className="commnet-button">Comment</button>
-            </form>
+          {storedUsername && (
+              <form
+                action=""
+                className="comment-box"
+                onSubmit={handleAddComment}
+              >
+                <div className="comment-username">{storedUsername}</div>
+                <textarea
+                  name="comment"
+                  className="comment-textarea"
+                  placeholder="Comment..."
+                  value={newComment}
+                  onChange={handleInputChange}
+                ></textarea>
+                <button className="commnet-button">Comment</button>
+              </form>
+            )}
             <div className="post-comment">
               {comments.map((comment, index) => (
                 <div className="comment-list" key={index}>
