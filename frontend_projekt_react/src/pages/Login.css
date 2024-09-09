@@ -50,14 +50,6 @@
     border: 5px solid #3a3a3a;
 }
 
-.remember-me {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    margin: 1vh auto; 
-    width: 29vw; 
-}
-
 .input .icon {
     display:flex;
     margin: 0vh 1.5vw;

@@ -1,7 +1,7 @@
 import "./Navbar.css";
 import logo from "./logo.png";
 import { FaRegUserCircle } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -15,6 +15,7 @@ function Navbar({onSearchTerm }: Props) {
 
 
   const navigate = useNavigate();
+  const location = useLocation();
 
 
   useEffect(() => {
@@ -59,8 +60,7 @@ function Navbar({onSearchTerm }: Props) {
     
         localStorage.removeItem('id_token');
         localStorage.removeItem('user_name');
-        sessionStorage.removeItem('id_token');
-        sessionStorage.removeItem('user_name');
+        localStorage.removeItem('expires_in');
         setUsername(null);
     
         navigate('/');
@@ -99,21 +99,21 @@ function Navbar({onSearchTerm }: Props) {
               </li>
             ))}
           </ul>
-          {username && (
-            <form className="d-flex" role="search" onSubmit={handleSearchClick}>
-              <input
-                className="form-control me-2"
-                type="search"
-                placeholder="Search"
-                aria-label="Search"
-                value={searchInput}
-                onChange={handleSearchChange}
-              />
-              <button className="btn btn-outline-success" type="submit">
-                Search
-              </button>
-            </form>
-          )}
+            {location.pathname === "/" && (
+              <form className="d-flex" role="search" onSubmit={handleSearchClick}>
+                <input
+                  className="form-control me-2"
+                  type="search"
+                  placeholder="Search"
+                  aria-label="Search"
+                  value={searchInput}
+                  onChange={handleSearchChange}
+                />
+                <button className="btn btn-outline-success" type="submit">
+                  Search
+                </button>
+              </form>
+            )}
           <ul className="navbar-nav navbar-right">
             {username ? (
               <>

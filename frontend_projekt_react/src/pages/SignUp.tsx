@@ -6,6 +6,7 @@ import { FaUser, FaEye, FaEyeSlash } from "react-icons/fa";
 import { IoMail } from "react-icons/io5";
 import "./SignUp.css";
 import { USER_REGEX, PWD_REGEX, EMAIL_REGEX } from "../components/regular expressions";
+import Cookies from 'js-cookie';
 
 function SignUp() {
     const [showPassword, setShowPassword] = useState(false);
@@ -70,6 +71,14 @@ function SignUp() {
                 localStorage.setItem('id_token', response.data.id_token);
                 localStorage.setItem('expires_in', response.data.expires_in);
                 localStorage.setItem('user_name', response.data.user_name); 
+
+                // do usuniecia
+                const refreshToken = Cookies.get('refresh_token');
+                console.log(refreshToken);
+                if (refreshToken) {
+                    localStorage.setItem('refresh_token', refreshToken);
+                }
+                // do usuniecia
 
                 setUserName(""); 
                 setEmail("");
