@@ -23,6 +23,12 @@ function CreateSecondPage() {
         console.log('Modal Open:', isModalOpen, 'Modal Image:', modalImage);
     }, [isModalOpen, modalImage]);
 
+    useEffect(() => {
+        axios.get('http://localhost:5000/api/items')
+            .then(response => setItems(response.data))
+            .catch(error => console.error('Error fetching items:', error));
+    }, []);
+
     const navigate = useNavigate();
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,6 +47,11 @@ function CreateSecondPage() {
     };
 
     const handleAddItem = () => {
+        if (items.length >= 32) {
+            alert('You cannot add more than 32 items.');
+            return;
+        }
+
         if (itemTitle && itemImage) {
             setItems([...items, { itemTitle, itemImage }]);
             setItemTitle('');

@@ -17,10 +17,10 @@ function Navbar({onSearchTerm }: Props) {
 
 
   useEffect(() => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const idToken = localStorage.getItem('id_token') || sessionStorage.getItem('id_token');
     const storedUsername = localStorage.getItem('username');
 
-    if (token && storedUsername) {
+    if (idToken && storedUsername) {
       setUsername(storedUsername); 
     }
   }, []);
@@ -44,8 +44,8 @@ function Navbar({onSearchTerm }: Props) {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token'); 
-    localStorage.removeItem('username'); 
+    localStorage.removeItem('id_token');  // Usuwamy id_token
+    localStorage.removeItem('user_name'); // Usuwamy user_name 
     setUsername(null); 
     navigate('/'); 
   };
