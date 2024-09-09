@@ -14,17 +14,20 @@ import { useEffect } from "react";
 function App() {
 
   const refreshAccessToken = async () => {
+    console.log("Refreshing token...");
     try {
-      const response = await axios.get('http://127.0.0.1:8000/get_new_id_token/', {
+      const response = await axios.get('http://127.0.0.1:8000/get_new_id_token/' ,{
         withCredentials: true, 
       });
 
       if (response.data.success) {
+        alert(response.data.message);
+
         localStorage.setItem('id_token', response.data.id_token);
         localStorage.setItem('expires_in', response.data.expires_in); 
         console.log("Token refreshed successfully.");
       } else {
-        console.error("Error refreshing token:", response.data.message);
+        alert(response.data.message);
       }
     } catch (error) {
       console.error("Error requesting token refresh:", error);
