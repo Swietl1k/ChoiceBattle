@@ -16,8 +16,6 @@ function Login() {
     const [isEmailValid, setIsEmailValid] = useState(false);
     const [isPasswordValid, setIsPasswordValid] = useState(false);
 
-    const [rememberMe, setRememberMe] = useState(false);
-
     const navigate = useNavigate();
 
     const togglePasswordVisibility = () => {
@@ -34,10 +32,6 @@ function Login() {
         const value = e.target.value;
         setPassword(value);
         setIsPasswordValid(PWD_REGEX.test(value));
-    };
-
-    const handleRememberMeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setRememberMe(e.target.checked);
     };
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -73,14 +67,8 @@ function Login() {
                 const expiresIn = response.data.expires_in;
 
                 localStorage.setItem('user_name', user_name); 
-
-                if (rememberMe) {
-                    localStorage.setItem('id_token', idToken);
-                    localStorage.setItem('expires_in', expiresIn);
-                } else {
-                    sessionStorage.setItem('id_token', idToken);
-                    sessionStorage.setItem('expires_in', expiresIn);
-                }
+                localStorage.setItem('id_token', idToken);
+                localStorage.setItem('expires_in', expiresIn);
 
                 navigate("/", { state: { user_name: user_name } }); 
 
@@ -126,9 +114,6 @@ function Login() {
                             </div>
                         </div>
                     </div>
-                    <label className="remember-me">
-                        <input type="checkbox" checked={rememberMe} onChange={handleRememberMeChange} />Remember me
-                    </label>
                     <button className="lo-submit" type="submit">Login</button>
                 </form>
                 <div className="login">Don't have an account? <Link to="/sign-up"><span>Register!</span></Link></div>
