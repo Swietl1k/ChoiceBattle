@@ -19,7 +19,7 @@ function Navbar({onSearchTerm }: Props) {
 
   useEffect(() => {
     const idToken = localStorage.getItem('id_token') || sessionStorage.getItem('id_token');
-    const storedUsername = localStorage.getItem('username');
+    const storedUsername = localStorage.getItem('user_name');
 
     if (idToken && storedUsername) {
       setUsername(storedUsername); 
@@ -49,22 +49,22 @@ function Navbar({onSearchTerm }: Props) {
 
     if (idToken) {
       try {
-        await axios.get('http://127.0.0.1:8000/strona/logout/', {
+        await axios.post('http://127.0.0.1:8000/strona/logout/', null, {
           headers: {
             Authorization: `Bearer ${idToken}`
           }
         });
-
+    
         localStorage.removeItem('id_token');
         localStorage.removeItem('user_name');
         sessionStorage.removeItem('id_token');
         sessionStorage.removeItem('user_name');
         setUsername(null);
-
+    
         navigate('/');
       } catch (error) {
-          console.error("Logout error:", error);
-          alert("Error logging out. Please try again.");
+        console.error("Logout error:", error);
+        alert("Error logging out. Please try again.");
       }
     } else {
       alert("No token found.");
