@@ -3,6 +3,7 @@ import logo from "./logo.png";
 import { FaRegUserCircle } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import axios from "axios";
 
 interface Props {
   onSearchTerm: (item: string) => void;
@@ -43,11 +44,31 @@ function Navbar({onSearchTerm }: Props) {
     onSearchTerm(searchInput); 
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('id_token');  // Usuwamy id_token
-    localStorage.removeItem('user_name'); // Usuwamy user_name 
-    setUsername(null); 
-    navigate('/'); 
+  const handleLogout = async () => {
+    const idToken = localStorage.getItem('id_token') || sessionStorage.getItem('id_token');
+
+    if (idToken) {
+      try {
+        await axios.get('http://127.0.0.1:8000/strona/logout/', {
+          headers: {
+            Authorization: `Bearer ${idToken}`
+          }
+        });
+
+        localStorage.removeItem('id_token');
+        localStorage.removeItem('user_name');
+        sessionStorage.removeItem('id_token');
+        sessionStorage.removeItem('user_name');
+        setUsername(null);
+
+        navigate('/');
+      } catch (error) {
+          console.error("Logout error:", error);
+          alert("Error logging out. Please try again.");
+      }
+    } else {
+      alert("No token found.");
+    }
   };
 
   return (
