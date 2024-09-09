@@ -61,7 +61,7 @@
             };
 
             try {
-                const response = await axios.post("http://localhost:5000/api/login", loginData, {
+                const response = await axios.post("http://127.0.0.1:8000/strona/login/", loginData, {
                     headers: {
                         "Content-Type": "application/json",
                     }
@@ -69,30 +69,31 @@
 
                 if (response.data.success) {
                     alert(response.data.message);
-
-                    const username = response.data.username;
-                    localStorage.setItem('username', username);
-
-                    //JWT token
-                    // const token = response.data.token;
-                    const token = 'fake-jwt-token';
-
+            
+                    const username = response.data.user_name;
+                    const idToken = response.data.id_token;
+                    const expiresIn = response.data.expires_in;
+            
+                    localStorage.setItem('user_name', username);
+            
                     if (rememberMe) {
-                        localStorage.setItem('token', token);
+                      localStorage.setItem('id_token', idToken);
+                      localStorage.setItem('expires_in', expiresIn);
                     } else {
-                        sessionStorage.setItem('token', token);
+                      sessionStorage.setItem('id_token', idToken);
+                      sessionStorage.setItem('expires_in', expiresIn);
                     }
-
-                    navigate("/", { state: {username: username } });
-
-                } else {
-                    alert(response.data.error);
+            
+                    navigate("/", { state: { user_name: username } });
+            
+                  } else {
+                    alert(response.data.message);
+                  }
+                } catch (error) {
+                  console.error("Login error:", error);
+                  alert("There was an error logging in. Please try again.");
                 }
-            } catch (error) {
-                console.error("Login error:", error);
-                alert("There was an error logging in. Please try again.");
-            }
-        };
+              };
 
         return (
             <>

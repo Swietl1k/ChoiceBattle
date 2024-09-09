@@ -35,7 +35,6 @@ function SignUp () {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
     
-        // Walidacja danych formularza
         if (!USER_REGEX.test(username)) {
             alert("Invalid username format. Username must be 4-24 characters long, start with a letter, and can contain letters, numbers, underscores, or hyphens.");
             return;
@@ -53,18 +52,14 @@ function SignUp () {
             return;
         }
 
-        
-    
-        // Przygotowanie danych do wysłania
         const userData = {
             email: email,
             password: password,
             user_name: username
         };
     
-        // Wysyłanie danych do backendu
         try {
-            const response = await axios.post("http://localhost:5000/api/sign-up", userData, {
+            const response = await axios.post("http://127.0.0.1:8000/strona/register/", userData, {
                 headers: {
                     "Content-Type": "application/json",
                 }
@@ -73,24 +68,31 @@ function SignUp () {
             if (response.data.success) {
                 alert(response.data.message);
 
-                setUsername("");
-                setEmail("");
-                setPassword("");
-                setConfirmPassword("");
-                setIsUsernameValid(false);
-                setIsEmailValid(false);
-                setIsPasswordValid(false);
-                setIsConfirmPasswordValid(false);
+            localStorage.setItem('id_token', response.data.id_token);
+            localStorage.setItem('expires_in', response.data.expires_in);
+            localStorage.setItem('username', response.data.user_name);
 
-                navigate("/login");
+            setUsername("");
+            setEmail("");
+            setPassword("");
+            setConfirmPassword("");
+            setIsUsernameValid(false);
+            setIsEmailValid(false);
+            setIsPasswordValid(false);
+            setIsConfirmPasswordValid(false);
+            navigate("/", { state: { user_name: username } });
 
             } else {
-                alert(response.data.error);
+                alert(response.data.message);
             }
     
-        } catch (error) {
-            console.error("Error:", error);
-            alert("There was an error creating your account. Please try again.");
+        } catch (error: unknown) {
+            if (axios.isAxiosError(error)) {
+                const errorMessage = error.response?.data?.message || "There was an error creating your account. Please try again.";
+                alert(errorMessage);
+            } else {
+                alert("There was an unknown error. Please try again.");
+            }
         }
     };
 
