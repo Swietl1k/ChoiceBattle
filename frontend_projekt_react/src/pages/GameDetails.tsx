@@ -32,7 +32,7 @@ function GameDetails() {
  
   const fetchAPI = async () => {
     try {
-      const responseDetails = await axios.get(`http://127.0.0.1:8000/strona/get_game_by_id/${game.id}/`);
+      const responseDetails = await axios.get(`https://127.0.0.1:8000/strona/get_game_by_id/${game.id}/`);
       setPretendents(responseDetails.data.choice_data);
     } catch (error) {
       console.error("Error fetching game details:", error);
@@ -40,7 +40,7 @@ function GameDetails() {
  
     try {
       const responseComments = await axios.get(
-        `http://127.0.0.1:8000/strona/get_game_comments/${game.id}/`
+        `https://127.0.0.1:8000/strona/get_game_comments/${game.id}/`
       );
       const transformedComments = Object.keys(responseComments.data).map(
         (key, index) => ({
@@ -82,7 +82,7 @@ function GameDetails() {
       setComments((prevComments) => [...prevComments, newCommentData]);
       setNewComment("");
       
-      await axios.post(`http://127.0.0.1:8000/strona/add_comment/${game.id}/`,
+      await axios.post(`https://127.0.0.1:8000/strona/add_comment/${game.id}/`,
         {
           comment: newCommentData.body
         }, {

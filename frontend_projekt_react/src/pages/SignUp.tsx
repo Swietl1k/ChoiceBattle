@@ -59,10 +59,10 @@ function SignUp() {
         };
 
         try {
-            const response = await axios.post("http://127.0.0.1:8000/strona/register/", userData, {
+            const response = await axios.post("https://127.0.0.1:8000/strona/register/", userData, {
                 headers: {
                     "Content-Type": "application/json",
-                }
+                }, withCredentials: true
             });
 
             if (response.data.success) {
@@ -73,8 +73,9 @@ function SignUp() {
                 localStorage.setItem('user_name', response.data.user_name); 
 
                 // do usuniecia
-                const refreshToken = Cookies.get('refresh_token');
-                console.log(refreshToken);
+                const doc = document.cookie;
+                const csrfToken = Cookies.get('csrftoken');
+                console.log(csrfToken);
 
                 setUserName(""); 
                 setEmail("");

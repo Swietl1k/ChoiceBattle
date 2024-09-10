@@ -53,7 +53,7 @@ function Login() {
         };
 
         try {
-            const response = await axios.post("http://127.0.0.1:8000/strona/login/", loginData, {
+            const response = await axios.post("https://127.0.0.1:8000/strona/login/", loginData, {
                 headers: {
                     "Content-Type": "application/json",
                 }
