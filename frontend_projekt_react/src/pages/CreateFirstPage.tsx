@@ -3,14 +3,19 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "./CreateFirstPage.css";
 import { categories } from "../components/categories";
+import { imageStorage } from "../components/configFirebase";
+import {ref, uploadBytes, listAll, getDownloadURL, deleteObject} from "firebase/storage";
 
 function Create() {
+
     const [category, setCategory] = useState('');
     const [rankingTitle, setrankingTitle] = useState('');
     const [rankingImage, setrankingImage] = useState<File | null>(null);
     const [imageUploaded, setImageUploaded] = useState(false);
 
     const [description, setDescription] = useState('');
+    const [firebaseImageURL, setFirebaseImageURL] = useState<string | null>(null);
+    const [firebaseImageRef, setFirebaseImageRef] = useState<string | null>(null);
 
     const navigate = useNavigate();
 
@@ -18,11 +23,71 @@ function Create() {
         const file = e.target.files?.[0];
         if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
             setrankingImage(file);
-            setImageUploaded(true);
+            uploadImageToFirebase(file);
         } else {
             alert('Please upload an image in JPEG or PNG format.');
         }
     };
+
+    const uploadImageToFirebase = (file: File) => {
+        const imageListRef = ref(imageStorage, 'main_image/');
+
+        listAll(imageListRef).then((response) => {
+            if (response.items.length >= 1) {
+                alert("You can only upload one image.");
+            } else {
+                // Jeśli nie ma żadnych zdjęć, pozwól na upload nowego zdjęcia
+                const imageRef = ref(imageStorage, `main_image/${file.name + '_' + Date.now()}`);
+                uploadBytes(imageRef, file).then(() => {
+                    //alert("Image uploaded to firebase");
+                    getDownloadURL(imageRef).then((url) => {
+                        setFirebaseImageURL(url);  
+                        setFirebaseImageRef(imageRef.fullPath);
+                        setImageUploaded(true);
+
+                        
+                        localStorage.setItem('firebaseImageURL', url);
+                        localStorage.setItem('imageUploaded', 'true');
+                        localStorage.setItem('firebaseImageRef', imageRef.fullPath);
+                    });
+                }).catch((error) => {
+                    console.error("Upload failed:", error);
+                });
+            }
+        }).catch((error) => {
+            console.error("Failed to check image list:", error);
+        });
+    };
+
+    const deleteImageFromFirebase = () => {
+        if (!firebaseImageRef) return; 
+        const fileRef = ref(imageStorage, firebaseImageRef);
+
+        deleteObject(fileRef).then(() => {
+            //alert("Image deleted successfully!");
+            setFirebaseImageURL(null);  
+            setFirebaseImageRef(null);  
+            setImageUploaded(false);    
+
+            localStorage.removeItem('firebaseImageURL');
+            localStorage.removeItem('imageUploaded');
+            localStorage.removeItem('firebaseImageRef');
+        }).catch((error) => {
+            console.error("Error deleting the file:", error);
+        });
+    };
+    
+    useEffect(() => {
+        const ImageListRef = ref(imageStorage, 'main_image');
+        listAll(ImageListRef).then((response) => {
+            if (response.items.length > 0) {
+                getDownloadURL(response.items[0]).then((url) => {
+                    setFirebaseImageURL(url);
+                });
+            }
+        });
+    }, []);
+
 
     const validateForm = () => {
         if (!category) {
@@ -39,7 +104,7 @@ function Create() {
             return false;
         }
 
-        if (!rankingImage) {
+        if (!rankingImage && !firebaseImageURL) {
             alert('Please upload an image.');
             return false;
         }
@@ -48,78 +113,33 @@ function Create() {
 
     const handleNextPage = () => {
         if (validateForm()) { 
-            if (rankingImage) {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    const base64Image = reader.result as string;
-                    localStorage.setItem('savedImage', base64Image); 
-                    navigate('/create-two');
-                };
-                reader.readAsDataURL(rankingImage);
-            }
             localStorage.setItem('category', category);
             localStorage.setItem('rankingTitle', rankingTitle);
             localStorage.setItem('description', description);
+            navigate('/create-two');
         }
     };
 
     const handleImageRemove = () => {
-        setrankingImage(null);
-        setImageUploaded(false);    
-        localStorage.removeItem('savedImage');
+        deleteImageFromFirebase(); 
     };
     
     useEffect(() => {
         const savedCategory = localStorage.getItem('category');
         const savedTitle = localStorage.getItem('rankingTitle');
         const savedDescription = localStorage.getItem('description');
-        const savedImage = localStorage.getItem('savedImage');
+        const savedImageURL = localStorage.getItem('firebaseImageURL');
+        const savedImageUploaded = localStorage.getItem('imageUploaded');
+        const savedImageRef = localStorage.getItem('firebaseImageRef');
 
-
-        if (savedCategory) {
-            setCategory(savedCategory);
-        }
-        if (savedTitle) {
-            setrankingTitle(savedTitle);
-        }
-
-        if (savedDescription) {
-            setDescription(savedDescription);
-        }
-
-        if (savedImage) {
-            fetch(savedImage) 
-              .then(res => res.blob()) 
-              .then(blob => {
-                  const file = new File([blob], 'savedImage', { type: 'image/jpeg' });
-                  setrankingImage(file);
-                  setImageUploaded(true);
-              });
-        }
+        if (savedCategory) setCategory(savedCategory);
+        if (savedTitle) setrankingTitle(savedTitle);
+        if (savedDescription) setDescription(savedDescription);
+        if (savedImageURL) setFirebaseImageURL(savedImageURL);
+        if (savedImageUploaded === 'true') setImageUploaded(true);
+        if (savedImageRef) setFirebaseImageRef(savedImageRef);
     }, []);
 
-   
-    useEffect(() => {
-        localStorage.setItem('category', category);
-    }, [category]);
-
-    useEffect(() => {
-        localStorage.setItem('rankingTitle', rankingTitle);
-    }, [rankingTitle]);
-
-    useEffect(() => {
-        localStorage.setItem('description', description); 
-    }, [description]);
-
-    useEffect(() => {
-        if (rankingImage) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                localStorage.setItem('savedImage', reader.result as string); 
-            };
-            reader.readAsDataURL(rankingImage);
-        }
-    }, [rankingImage]);
 
     return (
         <div>
@@ -179,9 +199,8 @@ function Create() {
                                 accept="image/jpeg, image/png"
                                 onChange={handleImageChange}
                             />
-                            
                         </div>
-                        <button className="lo-submit" onClick={handleNextPage}>Next</button>
+                        <button className="lo-submit" onClick={handleNextPage}>Next</button> 
                     </div>
                 </div>
                 <div className="right-container">
@@ -192,9 +211,9 @@ function Create() {
                     {!imageUploaded && (
                         <p>Image:</p>
                     )}
-                    {rankingImage && (
+                    {firebaseImageURL && (
                         <div className="image-and-button">
-                            <img src={URL.createObjectURL(rankingImage)} alt="Preview" className="image-preview" />
+                            <img src={firebaseImageURL} alt="Uploaded to Firebase" className="image-preview" />
                             <button className="remove-button" onClick={handleImageRemove}>
                                 Remove Image
                             </button>
