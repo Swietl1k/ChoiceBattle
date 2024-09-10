@@ -58,7 +58,7 @@ function SignUp() {
         };
 
         try {
-            const response = await axios.post("http://127.0.0.1:8000/strona/register/", userData, {
+            const response = await axios.post("http://127.0.0.1:8000/strona/register/", userData, { // http://127.0.0.1:8000/strona/register/
                 headers: {
                     "Content-Type": "application/json",
                 }, 

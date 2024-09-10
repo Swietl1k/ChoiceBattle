@@ -13,7 +13,7 @@ import { useEffect } from "react";
 
 function App() {
 
-  const refreshAccessToken = async () => {
+    const refreshAccessToken = async () => {
     console.log("Refreshing token...");
     try {
       const response = await axios.get('http://127.0.0.1:8000/get_new_id_token/' ,{
@@ -22,7 +22,6 @@ function App() {
 
       if (response.data.success) {
         alert(response.data.message);
-
         localStorage.setItem('id_token', response.data.id_token);
         localStorage.setItem('expires_in', response.data.expires_in); 
         console.log("Token refreshed successfully.");
@@ -43,8 +42,12 @@ function App() {
       const expiresAt = Date.now() + expiresInNumber * 1000; 
       const fiveMinutesBeforeExpiration = expiresAt - 5 * 60 * 1000; 
       const currentTime = Date.now();
+
+      console.log("Expires at:", new Date(expiresAt).toLocaleTimeString());
+      console.log("Current time:", new Date(currentTime).toLocaleTimeString());
   
       if (currentTime >= fiveMinutesBeforeExpiration) {
+        console.log("Token will expire in less than a minute. Refreshing the token...");
         refreshAccessToken();
       }
     };
@@ -55,7 +58,8 @@ function App() {
   
     return () => clearInterval(interval); 
   }, []); 
-  
+
+
 
   return (
     <BrowserRouter>

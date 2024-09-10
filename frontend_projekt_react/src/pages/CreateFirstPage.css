@@ -25,6 +25,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
+    word-wrap: break-word; /* Dodanie zawijania tekstu */
+    white-space: normal;
 }
 
 .right-container h2 {
@@ -34,7 +36,7 @@
 }
 
 .right-container p {
-    font-size: 24px;
+    font-size: 1.3vw;
     color: #ffffff; 
     margin-bottom: 10px;
     width: 100%;
@@ -98,8 +100,8 @@
 .lo-inputs {
     display: flex;
     flex-direction: column;
-    margin-top: 2vh;
-    gap:3vh;
+    margin-top: 1vh;
+    gap:1vh;
     margin-bottom: 2vh;
 }
 
@@ -142,8 +144,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 24vw;
-    height: 9vh;
+    width: 17vw;
+    height: 7vh;
     color: white;
     background: #3a3a3a;
     border-radius: 50px;
@@ -151,7 +153,7 @@
     font-weight: 700;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin-top: 1vh;
+    margin-top: 0vh;
 }
 
 .lo-submit:hover {
@@ -210,6 +212,7 @@
     padding: 10px;
     cursor: pointer;
     font-size: 14px;
+    margin-bottom: 1vh;
 }
 
 .remove-button:hover {

@@ -10,6 +10,8 @@ function Create() {
     const [rankingImage, setrankingImage] = useState<File | null>(null);
     const [imageUploaded, setImageUploaded] = useState(false);
 
+    const [description, setDescription] = useState('');
+
     const navigate = useNavigate();
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,6 +33,12 @@ function Create() {
             alert('Please enter a ranking title.');
             return false;
         }
+
+        if (!description) {
+            alert('Please enter a description.');
+            return false;
+        }
+
         if (!rankingImage) {
             alert('Please upload an image.');
             return false;
@@ -44,25 +52,29 @@ function Create() {
                 const reader = new FileReader();
                 reader.onloadend = () => {
                     const base64Image = reader.result as string;
-                    navigate('/create-two', { state: { category, rankingTitle, rankingImage: base64Image } });
+                    localStorage.setItem('savedImage', base64Image); 
+                    navigate('/create-two');
                 };
                 reader.readAsDataURL(rankingImage);
-            } else {
-                navigate('/create-two', { state: { category, rankingTitle, rankingImage: null } });
             }
+            localStorage.setItem('category', category);
+            localStorage.setItem('rankingTitle', rankingTitle);
+            localStorage.setItem('description', description);
         }
     };
 
     const handleImageRemove = () => {
         setrankingImage(null);
         setImageUploaded(false);    
-        sessionStorage.removeItem('savedImage');
+        localStorage.removeItem('savedImage');
     };
     
     useEffect(() => {
-        const savedCategory = sessionStorage.getItem('savedCategory');
-        const savedTitle = sessionStorage.getItem('savedTitle');
-        const savedImage = sessionStorage.getItem('savedImage');
+        const savedCategory = localStorage.getItem('category');
+        const savedTitle = localStorage.getItem('rankingTitle');
+        const savedDescription = localStorage.getItem('description');
+        const savedImage = localStorage.getItem('savedImage');
+
 
         if (savedCategory) {
             setCategory(savedCategory);
@@ -70,6 +82,11 @@ function Create() {
         if (savedTitle) {
             setrankingTitle(savedTitle);
         }
+
+        if (savedDescription) {
+            setDescription(savedDescription);
+        }
+
         if (savedImage) {
             fetch(savedImage) 
               .then(res => res.blob()) 
@@ -83,18 +100,22 @@ function Create() {
 
    
     useEffect(() => {
-        sessionStorage.setItem('savedCategory', category);
+        localStorage.setItem('category', category);
     }, [category]);
 
     useEffect(() => {
-        sessionStorage.setItem('savedTitle', rankingTitle);
+        localStorage.setItem('rankingTitle', rankingTitle);
     }, [rankingTitle]);
+
+    useEffect(() => {
+        localStorage.setItem('description', description); 
+    }, [description]);
 
     useEffect(() => {
         if (rankingImage) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                sessionStorage.setItem('savedImage', reader.result as string); 
+                localStorage.setItem('savedImage', reader.result as string); 
             };
             reader.readAsDataURL(rankingImage);
         }
@@ -138,6 +159,15 @@ function Create() {
                                 placeholder="Enter ranking title"
                             />
                         </div>
+                        <div className="input">
+                            <input
+                                type="text"
+                                className="text-input"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                placeholder="Enter ranking description"
+                            />
+                        </div>
                         <div className={`input file-input-container ${imageUploaded ? 'image-uploaded' : ''}`}>
                             <label htmlFor="file-upload" className="file-upload-label">
                                 Click to upload image
@@ -158,6 +188,7 @@ function Create() {
                     <h2>Preview</h2>
                     <p>Category: <strong>{category}</strong></p>
                     <p>Title: <strong>{rankingTitle}</strong></p>
+                    <p>Description: <strong>{description}</strong></p>
                     {!imageUploaded && (
                         <p>Image:</p>
                     )}
