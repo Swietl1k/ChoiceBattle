@@ -9,7 +9,7 @@ Decorator function: protection_view, provides other functions resistance to requ
 Other functions that use this decorator are executed only if these two previous conditions are met.  
 '''
 def protected_view(fun):
-    def inner_fun(request):
+    def inner_fun(request, **kwargs):
         # dodać odrzucenie użytkownika kiedy nie ma nagłówka Authorization
         # revoke przy logowaniu jeśli użytkownik posiada wczesniej wygenerowany stary token
         if not request.headers.get("Authorization"):
@@ -32,5 +32,5 @@ def protected_view(fun):
         
         request.user_id = result.get("uid")
 
-        return fun(request)
+        return fun(request, **kwargs)
     return inner_fun

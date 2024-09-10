@@ -1,3 +1,5 @@
 .venv/
 stronaww123-firebase-adminsdk-i25oq-82ae8cdb50.json
 **/__pycache__/
+cert.pem
+key.pem

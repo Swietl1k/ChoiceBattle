@@ -67,7 +67,7 @@ def get_new_id_token(request):
         "id_token": result.get("idToken"),
     }, status=status.HTTP_200_OK)
 
-    response.set_cookie("refresh_token", value=result.get("refreshToken"), httponly=True)
+    response.set_cookie("refresh_token", value=result.get("refreshToken"), max_age=3600, path="/", secure=True, httponly=True, samesite='None')
 
     return response
 
@@ -91,7 +91,7 @@ def get_game_by_id(request, game_id):
             "message": f"THERE IS NO SUCH GAME ID: {game_id} IN DATABASE"
         }, status=status.HTTP_400_BAD_REQUEST) 
     
-    return Response(game)
+    return Response(game, status=status.HTTP_200_OK)
 
 
 
@@ -171,7 +171,7 @@ def register(request):
             "expires_in": expires_in
         }, status=status.HTTP_200_OK)
 
-        response.set_cookie("refresh_token", value=refresh_token, httponly=True)
+        response.set_cookie("refresh_token", value=refresh_token, max_age=3600, path="/", secure=True, httponly=True, samesite='None')
 
         return response
     
@@ -216,10 +216,10 @@ def login(request):
         
         return Response({
             "success": False,
-            "message": "ERROR -> "
+            "message": f"ERROR -> {e}"
         }, status=status.HTTP_400_BAD_REQUEST)
 
-    user_id = user_data.get("uid")
+    user_id = user_data.uid
     
     
     try:
@@ -256,7 +256,7 @@ def login(request):
             "expires_in": expires_in
         }, status=status.HTTP_200_OK) 
         
-        response.set_cookie("refresh_token", value=refresh_token, httponly=True)
+        response.set_cookie("refresh_token", value=refresh_token, max_age=3600, path="/", secure=True, httponly=True, samesite='None')
 
         return response
 
@@ -267,6 +267,11 @@ def login(request):
             "success": False,
             "message": "INVALID LOGIN CREDENTIALS",
         }, status=status.HTTP_400_BAD_REQUEST)
+
+#@api_view(["POST"])
+#@protected_view
+#def upload_images(request):
+
 
 
 
@@ -284,11 +289,18 @@ def create(request):
         "category": <string: example>, 
         "number_of_choices": <int: example>, 
         "description": <string: example>, 
+        "main_image_url": <string: example>,
         "choices_data": [{
                             "title": <string: example>, 
-                            "photo_url": <string: example>, 
+                            "image_url": <string: example>,
                             "pick_count": <int: example>, 
-                            "win_count": <int: example>
+                            "win_count": <int: example>,
+                        },
+                        {
+                            "title": <string: example>, 
+                            "image_url": <string: example>,
+                            "pick_count": <int: example>, 
+                            "win_count": <int: example>,                        
                         }]
     }
     '''
@@ -331,10 +343,12 @@ def add_comment(request, game_id):
     #user_id = request.session.get('user_id')
 
     user_id = getattr(request, "user_id", None)
+    user_name = db.child("users").child(user_id).child("user_name").get().val()
 
-    # request_body:
-    # {"comment": <string: example>}
-
+    '''
+    request_body:
+    {"comment": <string: example>}
+    '''
     request_body = request.data
     comment_id = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
     poland_time = datetime.now(ZoneInfo("Europe/Warsaw"))
@@ -343,7 +357,8 @@ def add_comment(request, game_id):
     request_body.update({
         "date": formatted_time, 
         "game_id": game_id, 
-        "user_id": user_id
+        "user_id": user_id,
+        "user_name": user_name
     })
     
     try:
@@ -367,6 +382,7 @@ def add_comment(request, game_id):
 def get_game_comments(request, game_id):
     try:
         game_comments = db.child("comments").order_by_child("game_id").equal_to(game_id).get().val()
+        
         #game_comments_list = list(game_comments.items())
         # nie wiem czy robić paginacje skoro chcą ją na froncie robic 
         return Response(game_comments, status=status.HTTP_200_OK)
@@ -385,7 +401,7 @@ def get_game_comments(request, game_id):
 def find_category(request, category):
     #user_name = request.session.get("user_name")
 
-    #get = request.GET
+    get = request.GET
     #body = request.body
     #headers = request.headers
     #content_type = request.content_type
@@ -394,7 +410,7 @@ def find_category(request, category):
         if not category == "all":
             games_from_category = db.child("games").order_by_child("category").equal_to(category).get().val()
         else:
-            games_from_category = db.child("games").get.val()
+            games_from_category = db.child("games").get().val()
         
         games_from_category_list = list(games_from_category.items())   
 
@@ -416,6 +432,27 @@ def find_category(request, category):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     
+    if request.query_params.get("page") == "all":
+        games_list = []
+        for game_id, game_data in games_from_category.items():
+            game = {
+                "id": game_id,
+                "category": game_data.get("category", None),
+                "description":game_data.get("description", None),
+                "title": game_data.get("title", None),
+                "creator": db.child("users").child(game_data.get("user_id", None)).child("user_name").get().val(),
+                "image": game_data.get("main_image_url", "https://grafik.rp.pl/g4a/767071,375371,9.jpg")
+            }
+
+            games_list.append(game)
+        
+        response_data = {
+            "games": games_list
+        }
+        
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
     paginator = Paginator(games_from_category_list, 2)  # 2 items per page
     page_number = request.query_params.get("page", 1)  # Get the page number from the request, default is 1
     '''
