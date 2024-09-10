@@ -1,14 +1,11 @@
 import Navbar from "../components/Navbar";
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate} from 'react-router-dom';
 import axios from "axios";
 import "./CreateSecondPage.css";
 import { ImCross } from "react-icons/im";
 
 function CreateSecondPage() {
-    const location = useLocation(); 
-    const { category, rankingTitle, rankingImage } = location.state; 
-
 
 
     const [itemTitle, setItemTitle] = useState('');
@@ -19,18 +16,14 @@ function CreateSecondPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalImage, setModalImage] = useState<string | null>(null);
 
-    useEffect(() => {
-        console.log('Modal Open:', isModalOpen, 'Modal Image:', modalImage);
-    }, [isModalOpen, modalImage]);
-
-    useEffect(() => {
-        axios.get('http://localhost:5000/api/items')
-            .then(response => setItems(response.data))
-            .catch(error => console.error('Error fetching items:', error));
-    }, []);
-
     const navigate = useNavigate();
 
+    // Ustawienie liczby elementów w localStorage
+    useEffect(() => {
+        localStorage.setItem('itemCount', items.length.toString());
+    }, [items]);
+
+    // Funkcja do obsługi zmiany obrazu
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
@@ -41,11 +34,13 @@ function CreateSecondPage() {
         }
     };
 
+    // Funkcja do usuwania obrazu
     const handleImageRemove = () => {
         setItemImage(null);
         setImageUploaded(false);
     };
 
+    // Funkcja do dodawania elementu do listy
     const handleAddItem = () => {
         if (items.length >= 32) {
             alert('You cannot add more than 32 items.');
@@ -62,59 +57,77 @@ function CreateSecondPage() {
         }
     };
 
-    const handleImageClick = (itemImage: File) => {
-        const objectURL = URL.createObjectURL(itemImage);
-        console.log('Generated Object URL:', objectURL);
-        setModalImage(objectURL);
-        setIsModalOpen(true);
+    // Funkcja do obsługi kliknięcia na obraz (otwieranie modala)
+    const handleImageClick = (itemImage: File | null) => {
+        if (itemImage) {
+            const objectURL = URL.createObjectURL(itemImage);  // Tylko jeśli itemImage nie jest null
+            setModalImage(objectURL);
+            setIsModalOpen(true);
+        }
     };
 
+    // Funkcja do zamykania modala
     const closeModal = () => {
         setIsModalOpen(false);
         setModalImage(null);
     };
 
+    // Funkcja do usuwania elementu z listy
     const handleRemoveItem = (index: number) => {
         const updatedItems = items.filter((_, i) => i !== index);
         setItems(updatedItems);
     };
 
+    // Funkcja do konwersji pliku na base64
+    const convertToBase64 = (file: File): Promise<string | null> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = () => reject(null);
+            reader.readAsDataURL(file);
+        });
+    };
+
+    // Funkcja do zakończenia tworzenia rankingu
     const handleFinish = async () => {
-        if (items.length < 2) {
-            alert("You need to add at least 2 items before submitting.");
+        if (![0,1,8, 16, 32].includes(items.length)) {
+            alert("You must add exactly 8, 16, or 32 items.");
             return;
         }
 
         try {
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-
+            const token = localStorage.getItem('id_token') 
+            
             if (!token) {
                 alert("User is not authenticated");
                 return;
-            }
+            } 
 
-            let rankingImageBase64 = rankingImage;
-            if (rankingImage instanceof File) {
-                const reader = new FileReader();
-                rankingImageBase64 = await new Promise<string | null>((resolve, reject) => {
-                    reader.onloadend = () => resolve(reader.result as string);
-                    reader.onerror = () => reject(null);
-                    reader.readAsDataURL(rankingImage);
-                });
-            }
+            // Konwersja obrazów elementów na base64
+            const choices_data = await Promise.all(
+                items.map(async item => {
+                    const imageBase64 = item.itemImage
+                        ? await convertToBase64(item.itemImage)
+                        : null;
 
-    
-            const itemsData = {
-                category,  
-                rankingTitle, 
-                rankingImage: rankingImageBase64,  
-                items: items.map(item => ({
-                    title: item.itemTitle,
-                    image: item.itemImage ? URL.createObjectURL(item.itemImage) : null
-                }))
+                    return {
+                        title: item.itemTitle,
+                        image_url: imageBase64,
+                        pick_count: 0,
+                        win_count: 0
+                    };
+                })
+            );
+
+            const requestBody = {
+                title: localStorage.getItem('rankingTitle'),
+                category: localStorage.getItem('category'),
+                description: localStorage.getItem('description'),
+                main_image_url: localStorage.getItem('savedImage'),
+                choices_data: choices_data
             };
 
-            const response = await axios.post('http://localhost:5000/api/submit-items', itemsData, {
+            const response = await axios.post('http://127.0.0.1:8000/strona/create/', requestBody, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
@@ -122,15 +135,17 @@ function CreateSecondPage() {
             });
 
             if (response.data.success) {
-                alert('Items successfully submitted');
-
-                sessionStorage.removeItem('savedCategory');
-                sessionStorage.removeItem('savedTitle');
-                sessionStorage.removeItem('savedImage');
-
+                alert(response.data.message);
                 navigate('/');
+
+                localStorage.removeItem('category');
+                localStorage.removeItem('rankingTitle');
+                localStorage.removeItem('description');
+                localStorage.removeItem('savedImage');
+                localStorage.removeItem('itemCount');
+
             } else {
-                alert('Failed to submit items');
+                alert(response.data.message);
             }
         } catch (error) {
             console.error("Error submitting items:", error);
@@ -161,8 +176,8 @@ function CreateSecondPage() {
                                 placeholder="Enter item title"
                             />
                         </div>
-                        {!imageUploaded ? (
-                            <div className={`input file-input-container-second`}>
+                        {!imageUploaded && (
+                            <div className="input file-input-container-second">
                                 <label htmlFor="file-upload-second" className="file-upload-label-second">
                                     Click to upload image
                                 </label>
@@ -174,10 +189,10 @@ function CreateSecondPage() {
                                     onChange={handleImageChange}
                                 />
                             </div>
-                        ) : (
-
+                        )}
+                        {imageUploaded && itemImage && (
                             <div className="image-and-button-second">
-                                <img src={URL.createObjectURL(itemImage!)} alt="Preview" className="image-preview-second" />
+                                <img src={URL.createObjectURL(itemImage)} alt="Preview" className="image-preview-second" />
                                 <button className="remove-button-second" onClick={handleImageRemove}>
                                     Remove Image
                                 </button>
@@ -194,13 +209,15 @@ function CreateSecondPage() {
                     <div className="items-container">
                         {items.map((item, index) => (
                             <div key={index} className="item-title-image-remove">
-                                <img
-                                    src={URL.createObjectURL(item.itemImage!)}
-                                    alt="Item Preview"
-                                    className="item-image"
-                                    onClick={() => handleImageClick(item.itemImage!)}
-                                    style={{ cursor: 'pointer' }}
-                                />
+                                {item.itemImage && (
+                                    <img
+                                        src={URL.createObjectURL(item.itemImage)}
+                                        alt="Item Preview"
+                                        className="item-image"
+                                        onClick={() => handleImageClick(item.itemImage)}
+                                        style={{ cursor: 'pointer' }}
+                                    />
+                                )}
                                 <p className="item-title"><strong>{item.itemTitle}</strong></p>
                                 <button
                                     className="item-remove"

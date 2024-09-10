@@ -53,10 +53,11 @@ function Login() {
         };
 
         try {
-            const response = await axios.post("http://127.0.0.1:8000/strona/login/", loginData, {
+            const response = await axios.post("http://127.0.0.1:8000/strona/login/", loginData, { // http://127.0.0.1:8000/strona/login/
                 headers: {
                     "Content-Type": "application/json",
-                }
+                },
+                withCredentials: true,
             });
 
             if (response.data.success) {
