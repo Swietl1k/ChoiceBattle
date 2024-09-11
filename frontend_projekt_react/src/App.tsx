@@ -16,7 +16,7 @@ function App() {
     const refreshAccessToken = async () => {
     console.log("Refreshing token...");
     try {
-      const response = await axios.get('http://127.0.0.1:8000/get_new_id_token/' ,{
+      const response = await axios.get('https://127.0.0.1:8000/get_new_id_token/' ,{
         withCredentials: true, 
       });
 
@@ -40,6 +40,14 @@ function App() {
 
   useEffect(() => {
     const checkTokenExpiration = () => {
+      const userName = localStorage.getItem('user_name'); 
+
+    if (!userName) {
+      console.log("User not logged in, skipping token checks.");
+      return;
+    }
+
+
       const idToken = localStorage.getItem('id_token');
       const expiresAt = localStorage.getItem('expires_at');
 
@@ -57,12 +65,20 @@ function App() {
 
       const fiveMinutesBeforeExpiration = expiresAtNumber - 5 * 60 * 1000;
 
-      if (currentTime >= fiveMinutesBeforeExpiration) {
+
+      if (currentTime >= expiresAtNumber) {
+        console.log("Token has expired. Refreshing the token...");
+        refreshAccessToken();
+      } else if(currentTime >= fiveMinutesBeforeExpiration) {
         console.log("Token will expire in less than 5 minutes. Refreshing the token...");
         refreshAccessToken();
+      } else {
+        console.log("Token is still valid.");
       }
     };
   
+    checkTokenExpiration(); // Check immediately when the app starts
+
     const interval = setInterval(() => {
       checkTokenExpiration();
       
