@@ -16,7 +16,7 @@ function App() {
     const refreshAccessToken = async () => {
     console.log("Refreshing token...");
     try {
-      const response = await axios.get('https://127.0.0.1:8000/get_new_id_token/' ,{
+      const response = await axios.get('https://127.0.0.1:8000/strona/get_new_id_token/' ,{
         withCredentials: true, 
       });
 
@@ -57,7 +57,13 @@ function App() {
         return;
       }
 
-      const expiresAtNumber = Number(expiresAt); 
+      const expiresAtNumber = parseInt(expiresAt, 10); 
+      if (isNaN(expiresAtNumber)) {
+        console.error("Invalid expires_at value");
+        refreshAccessToken();
+        return;
+      }
+
       const currentTime = Date.now();
 
       console.log("Expires at:", new Date(expiresAtNumber).toLocaleTimeString());
