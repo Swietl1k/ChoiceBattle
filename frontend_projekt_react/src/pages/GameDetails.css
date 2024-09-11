@@ -34,9 +34,6 @@
 .right-box{
     background-color: rgb(245, 245, 245);
     border-radius: 10px;
-    /* padding-left: 3%;
-    padding-right: 3%; */
-    padding: 1%;
     height: fit-content;
     max-height: 80vh;
     overflow-y: auto !important;
@@ -152,7 +149,9 @@
     padding: 10px;
     border: 1px solid grey;
     border-radius: 15px;
-    margin-bottom: 5px;
+    margin-bottom: 1%;
+    margin-left: 1%;
+    margin-right: 1%;
 }
 
 .comment-box{
@@ -160,7 +159,11 @@
     padding: 10px;
     border: 1px solid grey;
     border-radius: 15px;
-    margin-bottom: 5px;
+    margin: 1%;
+}
+
+.comment-list:first-child{ 
+    margin-top: 1%; 
 }
 
 .comment-username{
