@@ -4,6 +4,8 @@ import Navbar from "../components/Navbar";
 import VersusIcon from "../components/versusIcon.png";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import "../components/Model";
+import Model from "../components/Model";
 
 type gameOptions = {
   img1_url: string;
@@ -20,7 +22,8 @@ function Game() {
 
   const [gameData, setGameData] = useState<gameOptions | null>(null);
   const [loading, setLoading] = useState(false);
-
+  const [openModel, setOpenModel] = useState(false);
+  
   const fetchAPI = async () => {
     setLoading(true);
     try {
@@ -44,6 +47,7 @@ function Game() {
   }, []);
 
   const handleOptionChoice = async (winner: String) => {
+    if (!gameData) return;
     setLoading(true);
     try {
       await axios.post(
@@ -56,11 +60,19 @@ function Game() {
         }
       );
 
-      fetchAPI();
+      if (gameData?.current_round < gameData?.number_of_choices) {
+        fetchAPI();
+      } else {
+        setOpenModel(true);
+        setLoading(true);
+      }
+      
     } catch (error) {
       console.error("Error sending option choice to backend:", error);
     } finally {
-      setLoading(false);
+      if (gameData.current_round < gameData.number_of_choices) {
+        setLoading(false);
+      }
     }
   };
 
@@ -117,6 +129,7 @@ function Game() {
           </>
         )}
       </div>
+      {openModel && <Model />}
     </>
   );
 }

@@ -9,7 +9,7 @@ type GameDetails = {
   title: string;
   championship_rate: number;
   win_rate: number;
-  image: string;
+  image_url: string;
 };
  
 type Comments = {
@@ -131,7 +131,7 @@ function GameDetails() {
               <h5 className="pretendent-title">
                 {index + 1}. {pretendent.title}
               </h5>
-              <img className="pretendent-image" src={pretendent.image} alt="" />
+              <img className="pretendent-image" src={pretendent.image_url} alt="" />
  
               <div className="pretendent-progress">
                 <span>Championship Rate</span>

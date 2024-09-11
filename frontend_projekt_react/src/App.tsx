@@ -16,7 +16,7 @@ function App() {
     const refreshAccessToken = async () => {
     console.log("Refreshing token...");
     try {
-      const response = await axios.get('http://127.0.0.1:8000/get_new_id_token/' ,{
+      const response = await axios.get('https://127.0.0.1:8000/get_new_id_token/' ,{
         withCredentials: true, 
       });
 
