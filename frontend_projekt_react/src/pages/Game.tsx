@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import VersusIcon from "../components/versusIcon.png";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import Model from "../components/Model";
 
 type gameOptions = {
   img1_url: string;
@@ -20,14 +21,18 @@ function Game() {
 
   const [gameData, setGameData] = useState<gameOptions | null>(null);
   const [loading, setLoading] = useState(false);
+  const [openModel, setOpenModel] = useState(false);
+
+  const [winnerImg, setWinnerImg] = useState<string | null>(null);
+  const [winnerTitle, setWinnerTitle] = useState<string | null>(null);
 
   const fetchAPI = async () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `https://127.0.0.1:8000/strona/play_end_get/${game.id}/`, 
+        `https://127.0.0.1:8000/strona/play_end_get/${game.id}/`,
         {
-          withCredentials: true
+          withCredentials: true,
         }
       );
       setGameData(response.data);
@@ -44,6 +49,7 @@ function Game() {
   }, []);
 
   const handleOptionChoice = async (winner: String) => {
+    if (!gameData) return;
     setLoading(true);
     try {
       await axios.post(
@@ -52,15 +58,30 @@ function Game() {
           winner: winner,
         },
         {
-          withCredentials: true
+          withCredentials: true,
         }
       );
 
-      fetchAPI();
+      if (winner === "img1") {
+        setWinnerImg(gameData.img1_url);
+        setWinnerTitle(gameData.img1_title);
+      } else if (winner === "img2") {
+        setWinnerImg(gameData.img2_url);
+        setWinnerTitle(gameData.img2_title);
+      }
+
+      if (gameData?.current_round < gameData?.number_of_choices) {
+        fetchAPI();
+      } else {
+        setOpenModel(true);
+        setLoading(true);
+      }
     } catch (error) {
       console.error("Error sending option choice to backend:", error);
     } finally {
-      setLoading(false);
+      if (gameData.current_round < gameData.number_of_choices) {
+        setLoading(false);
+      }
     }
   };
 
@@ -73,7 +94,9 @@ function Game() {
           <div className="loading">Loading...</div>
         ) : (
           <>
-            <div className="game-round">{gameData?.current_round} / {gameData?.number_of_choices}</div>
+            <div className="game-round">
+              {gameData?.current_round} / {gameData?.number_of_choices}
+            </div>
             <div className="grid-container game-grid-container">
               <div
                 className="box game-box"
@@ -117,6 +140,7 @@ function Game() {
           </>
         )}
       </div>
+      {openModel && <Model winnerImg={winnerImg} winnerTitle={winnerTitle} />}
     </>
   );
 }
