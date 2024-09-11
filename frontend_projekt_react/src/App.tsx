@@ -21,9 +21,14 @@ function App() {
       });
 
       if (response.data.success) {
-        alert(response.data.message);
+        let expiresIn = response.data.expires_in;
+
+        
+        expiresIn = Number(expiresIn); 
+        const expiresAt = Date.now() + expiresIn * 1000; 
+        
         localStorage.setItem('id_token', response.data.id_token);
-        localStorage.setItem('expires_in', response.data.expires_in); 
+        localStorage.setItem('expires_at', expiresAt.toString());
         console.log("Token refreshed successfully.");
       } else {
         alert(response.data.message);
@@ -35,19 +40,25 @@ function App() {
 
   useEffect(() => {
     const checkTokenExpiration = () => {
-      const expiresIn = localStorage.getItem('expires_in');
-      if (!expiresIn) return;
-  
-      const expiresInNumber = +expiresIn; 
-      const expiresAt = Date.now() + expiresInNumber * 1000; 
-      const fiveMinutesBeforeExpiration = expiresAt - 5 * 60 * 1000; 
+      const idToken = localStorage.getItem('id_token');
+      const expiresAt = localStorage.getItem('expires_at');
+
+      if (!idToken || !expiresAt) {
+        console.log("No token found, refreshing immediately.");
+        refreshAccessToken(); 
+        return;
+      }
+
+      const expiresAtNumber = Number(expiresAt); 
       const currentTime = Date.now();
 
-      console.log("Expires at:", new Date(expiresAt).toLocaleTimeString());
+      console.log("Expires at:", new Date(expiresAtNumber).toLocaleTimeString());
       console.log("Current time:", new Date(currentTime).toLocaleTimeString());
-  
+
+      const fiveMinutesBeforeExpiration = expiresAtNumber - 5 * 60 * 1000;
+
       if (currentTime >= fiveMinutesBeforeExpiration) {
-        console.log("Token will expire in less than a minute. Refreshing the token...");
+        console.log("Token will expire in less than 5 minutes. Refreshing the token...");
         refreshAccessToken();
       }
     };
@@ -55,7 +66,7 @@ function App() {
     const interval = setInterval(() => {
       checkTokenExpiration();
       
-    }, 60000); 
+    }, 3 * 60 * 1000); 
   
     return () => clearInterval(interval); 
   }, []); 
