@@ -188,18 +188,20 @@ function Create() {
                                 placeholder="Enter ranking description"
                             />
                         </div>
-                        <div className={`input file-input-container ${imageUploaded ? 'image-uploaded' : ''}`}>
-                            <label htmlFor="file-upload" className="file-upload-label">
-                                Click to upload image
-                            </label>
-                            <input
-                                id="file-upload"
-                                type="file"
-                                className="file-input"
-                                accept="image/jpeg, image/png"
-                                onChange={handleImageChange}
-                            />
-                        </div>
+                        {!imageUploaded && ( // Ukryj przycisk upload gdy obraz został załadowany
+                            <div className="input file-input-container">
+                                <label htmlFor="file-upload" className="file-upload-label">
+                                    Click to upload image
+                                </label>
+                                <input
+                                    id="file-upload"
+                                    type="file"
+                                    className="file-input"
+                                    accept="image/jpeg, image/png"
+                                    onChange={handleImageChange}
+                                />
+                            </div>
+                        )}
                         <button className="lo-submit" onClick={handleNextPage}>Next</button> 
                     </div>
                 </div>
