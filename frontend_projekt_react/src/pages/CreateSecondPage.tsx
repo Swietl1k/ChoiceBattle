@@ -201,13 +201,36 @@ function CreateSecondPage() {
 
             if (response.data.success) {
                 alert(response.data.message);
-                navigate('/');
+
+                const mainImageRef = ref(imageStorage, 'main_image/');
+                const itemImagesRef = ref(imageStorage, 'item_images/');
+
+                listAll(mainImageRef)
+                .then((response) => {
+                    const deletePromises = response.items.map((item) => deleteObject(item));
+                    return Promise.all(deletePromises);
+                })
+                .catch((error) => {
+                    console.error("Error deleting files from main_image/:", error);
+                });
+
+                // Usuwanie plików z folderu item_images/
+                listAll(itemImagesRef)
+                .then((response) => {
+                    const deletePromises = response.items.map((item) => deleteObject(item));
+                    return Promise.all(deletePromises);
+                })
+                .catch((error) => {
+                    console.error("Error deleting files from item_images/:", error);
+                });
+
 
                 localStorage.removeItem('category');
                 localStorage.removeItem('rankingTitle');
                 localStorage.removeItem('description');
                 localStorage.removeItem('savedImage');
                 localStorage.removeItem('itemCount');
+                navigate('/');
 
             } else {
                 alert(response.data.message);

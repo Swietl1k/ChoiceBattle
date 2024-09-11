@@ -54,6 +54,7 @@ function App() {
   
     const interval = setInterval(() => {
       checkTokenExpiration();
+      
     }, 60000); 
   
     return () => clearInterval(interval); 
