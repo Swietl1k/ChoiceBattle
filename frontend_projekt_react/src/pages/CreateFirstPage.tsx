@@ -4,20 +4,51 @@ import { useNavigate } from 'react-router-dom';
 import "./CreateFirstPage.css";
 import { categories } from "../components/categories";
 import { imageStorage } from "../components/configFirebase";
-import {ref, uploadBytes, listAll, getDownloadURL, deleteObject} from "firebase/storage";
+import { ref, uploadBytes, listAll, getDownloadURL, deleteObject } from "firebase/storage";
 
 function Create() {
-
     const [category, setCategory] = useState('');
     const [rankingTitle, setrankingTitle] = useState('');
     const [rankingImage, setrankingImage] = useState<File | null>(null);
     const [imageUploaded, setImageUploaded] = useState(false);
-
     const [description, setDescription] = useState('');
     const [firebaseImageURL, setFirebaseImageURL] = useState<string | null>(null);
     const [firebaseImageRef, setFirebaseImageRef] = useState<string | null>(null);
+    const [uniqueFolder, setUniqueFolder] = useState<string | null>(null);
 
     const navigate = useNavigate();
+
+    // Sprawdzenie, czy istnieje folder, a w nim zdjęcie
+    useEffect(() => {
+        const checkFolderAndImage = async () => {
+            const savedFolder = localStorage.getItem('uniqueFolder');
+            if (savedFolder) {
+                const folderRef = ref(imageStorage, `${savedFolder}/main_image/`);
+                try {
+                    const list = await listAll(folderRef);
+                    if (list.items.length > 0) {
+                        const imageRef = list.items[0]; // Pobierz pierwszy obraz
+                        const url = await getDownloadURL(imageRef);
+                        setFirebaseImageURL(url);
+                        setFirebaseImageRef(imageRef.fullPath);
+                        setImageUploaded(true);
+                    } else {
+                        // Brak zdjęć w folderze, resetujemy stan
+                        setFirebaseImageURL(null);
+                        setFirebaseImageRef(null);
+                        setImageUploaded(false);
+                    }
+                } catch (error) {
+                    console.error("Folder or image does not exist:", error);
+                    setFirebaseImageURL(null);
+                    setFirebaseImageRef(null);
+                    setImageUploaded(false);
+                }
+            }
+        };
+
+        checkFolderAndImage();
+    }, []);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -30,22 +61,17 @@ function Create() {
     };
 
     const uploadImageToFirebase = (file: File) => {
-        const imageListRef = ref(imageStorage, 'main_image/');
-
+        const imageListRef = ref(imageStorage, `${uniqueFolder}/main_image/`);
         listAll(imageListRef).then((response) => {
             if (response.items.length >= 1) {
                 alert("You can only upload one image.");
             } else {
-                // Jeśli nie ma żadnych zdjęć, pozwól na upload nowego zdjęcia
-                const imageRef = ref(imageStorage, `main_image/${file.name + '_' + Date.now()}`);
+                const imageRef = ref(imageStorage, `${uniqueFolder}/main_image/${file.name + '_' + Date.now()}`);
                 uploadBytes(imageRef, file).then(() => {
-                    //alert("Image uploaded to firebase");
                     getDownloadURL(imageRef).then((url) => {
-                        setFirebaseImageURL(url);  
+                        setFirebaseImageURL(url);
                         setFirebaseImageRef(imageRef.fullPath);
                         setImageUploaded(true);
-
-                        
                         localStorage.setItem('firebaseImageURL', url);
                         localStorage.setItem('imageUploaded', 'true');
                         localStorage.setItem('firebaseImageRef', imageRef.fullPath);
@@ -60,15 +86,12 @@ function Create() {
     };
 
     const deleteImageFromFirebase = () => {
-        if (!firebaseImageRef) return; 
+        if (!firebaseImageRef) return;
         const fileRef = ref(imageStorage, firebaseImageRef);
-
         deleteObject(fileRef).then(() => {
-            //alert("Image deleted successfully!");
-            setFirebaseImageURL(null);  
-            setFirebaseImageRef(null);  
-            setImageUploaded(false);    
-
+            setFirebaseImageURL(null);
+            setFirebaseImageRef(null);
+            setImageUploaded(false);
             localStorage.removeItem('firebaseImageURL');
             localStorage.removeItem('imageUploaded');
             localStorage.removeItem('firebaseImageRef');
@@ -76,18 +99,6 @@ function Create() {
             console.error("Error deleting the file:", error);
         });
     };
-    
-    useEffect(() => {
-        const ImageListRef = ref(imageStorage, 'main_image');
-        listAll(ImageListRef).then((response) => {
-            if (response.items.length > 0) {
-                getDownloadURL(response.items[0]).then((url) => {
-                    setFirebaseImageURL(url);
-                });
-            }
-        });
-    }, []);
-
 
     const validateForm = () => {
         if (!category) {
@@ -112,7 +123,7 @@ function Create() {
     };
 
     const handleNextPage = () => {
-        if (validateForm()) { 
+        if (validateForm()) {
             localStorage.setItem('category', category);
             localStorage.setItem('rankingTitle', rankingTitle);
             localStorage.setItem('description', description);
@@ -120,34 +131,32 @@ function Create() {
         }
     };
 
-    const handleImageRemove = () => {
-        deleteImageFromFirebase(); 
-    };
-    
     useEffect(() => {
         const savedCategory = localStorage.getItem('category');
-        const savedTitle = localStorage.getItem('rankingTitle');
+        const savedRankingTitle = localStorage.getItem('rankingTitle');
         const savedDescription = localStorage.getItem('description');
-        const savedImageURL = localStorage.getItem('firebaseImageURL');
-        const savedImageUploaded = localStorage.getItem('imageUploaded');
-        const savedImageRef = localStorage.getItem('firebaseImageRef');
+        const savedFolder = localStorage.getItem('uniqueFolder');
 
         if (savedCategory) setCategory(savedCategory);
-        if (savedTitle) setrankingTitle(savedTitle);
+        if (savedRankingTitle) setrankingTitle(savedRankingTitle);
         if (savedDescription) setDescription(savedDescription);
-        if (savedImageURL) setFirebaseImageURL(savedImageURL);
-        if (savedImageUploaded === 'true') setImageUploaded(true);
-        if (savedImageRef) setFirebaseImageRef(savedImageRef);
-    }, []);
 
+        if (!savedFolder) {
+            const newFolder = `folder_${Date.now()}`;
+            setUniqueFolder(newFolder);
+            localStorage.setItem('uniqueFolder', newFolder);
+        } else {
+            setUniqueFolder(savedFolder);
+        }
+    }, []);
 
     return (
         <div>
-            <Navbar onSearchTerm={() => {}}/>
+            <Navbar onSearchTerm={() => { }} />
             <div className="main-container">
                 <div className="left-container">
                     <div className="navigation-buttons">
-                        <button className="active-button" >Step 1</button>
+                        <button className="active-button">Step 1</button>
                         <button className="step-two-button" onClick={handleNextPage}>Step 2</button>
                     </div>
                     <div className="lo-header">
@@ -162,12 +171,12 @@ function Create() {
                                 onChange={(e) => setCategory(e.target.value)}>
                                 <option value="">Select a category</option>
                                 {categories
-                                .filter(cat=>cat !="All")
-                                .map((cat) => (
-                                    <option key={cat} value={cat}>
-                                        {cat}
-                                    </option>
-                                ))}
+                                    .filter(cat => cat !== "All")
+                                    .map((cat) => (
+                                        <option key={cat} value={cat}>
+                                            {cat}
+                                        </option>
+                                    ))}
                             </select>
                         </div>
                         <div className="input">
@@ -188,7 +197,7 @@ function Create() {
                                 placeholder="Enter ranking description"
                             />
                         </div>
-                        {!imageUploaded && ( // Ukryj przycisk upload gdy obraz został załadowany
+                        {!imageUploaded && (
                             <div className="input file-input-container">
                                 <label htmlFor="file-upload" className="file-upload-label">
                                     Click to upload image
@@ -202,7 +211,7 @@ function Create() {
                                 />
                             </div>
                         )}
-                        <button className="lo-submit" onClick={handleNextPage}>Next</button> 
+                        <button className="lo-submit" onClick={handleNextPage}>Next</button>
                     </div>
                 </div>
                 <div className="right-container">
@@ -210,13 +219,10 @@ function Create() {
                     <p>Category: <strong>{category}</strong></p>
                     <p>Title: <strong>{rankingTitle}</strong></p>
                     <p>Description: <strong>{description}</strong></p>
-                    {!imageUploaded && (
-                        <p>Image:</p>
-                    )}
                     {firebaseImageURL && (
                         <div className="image-and-button">
                             <img src={firebaseImageURL} alt="Uploaded to Firebase" className="image-preview" />
-                            <button className="remove-button" onClick={handleImageRemove}>
+                            <button className="remove-button" onClick={deleteImageFromFirebase}>
                                 Remove Image
                             </button>
                         </div>
