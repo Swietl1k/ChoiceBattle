@@ -21,6 +21,8 @@ function CreateSecondPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalImage, setModalImage] = useState<string | null>(null);
 
+    const [uniqueFolder, setUniqueFolder] = useState<string | null>(null);
+
     const navigate = useNavigate();
 
     // Ustawienie liczby elementów w localStorage
@@ -28,8 +30,19 @@ function CreateSecondPage() {
         localStorage.setItem('itemCount', items.length.toString());
     }, [items]);
 
+    useEffect(() => {
+        const savedFolder = localStorage.getItem('uniqueFolder');
+        if (!savedFolder) {
+            const newFolder = `folder_${Date.now()}`;
+            setUniqueFolder(newFolder);
+            localStorage.setItem('uniqueFolder', newFolder);
+        } else {
+            setUniqueFolder(savedFolder);
+        }
+    }, []);
+
     const fetchItemsFromFirebase = () => {
-        const listRef = ref(imageStorage, 'item_images/');
+        const listRef = ref(imageStorage, `${uniqueFolder}/item_images/`);
 
         listAll(listRef)
             .then((response) => {
@@ -57,8 +70,11 @@ function CreateSecondPage() {
     };
 
     useEffect(() => {
-        fetchItemsFromFirebase(); // Pobierz elementy z Firebase przy załadowaniu komponentu
-    }, []);
+        if (uniqueFolder) {
+            fetchItemsFromFirebase(); // Pobierz elementy z Firebase przy załadowaniu komponentu
+        }
+    }, [uniqueFolder]);
+
 
 
     useEffect(() => {
@@ -99,8 +115,8 @@ function CreateSecondPage() {
             return;
         }
 
-        if (itemTitle && itemImage) {
-            const imageRef = ref(imageStorage, `item_images/${Date.now()}_${itemTitle}.${itemImage.name.split('.').pop()}`);
+        if (itemTitle && itemImage && uniqueFolder) {
+            const imageRef = ref(imageStorage, `${uniqueFolder}/item_images/${Date.now()}_${itemTitle}.${itemImage.name.split('.').pop()}`);
             uploadBytes(imageRef, itemImage)
                 .then(() => {
                     getDownloadURL(imageRef).then((url) => {
@@ -202,29 +218,7 @@ function CreateSecondPage() {
             if (response.data.success) {
                 alert(response.data.message);
 
-                const mainImageRef = ref(imageStorage, 'main_image/');
-                const itemImagesRef = ref(imageStorage, 'item_images/');
-
-                listAll(mainImageRef)
-                .then((response) => {
-                    const deletePromises = response.items.map((item) => deleteObject(item));
-                    return Promise.all(deletePromises);
-                })
-                .catch((error) => {
-                    console.error("Error deleting files from main_image/:", error);
-                });
-
-                // Usuwanie plików z folderu item_images/
-                listAll(itemImagesRef)
-                .then((response) => {
-                    const deletePromises = response.items.map((item) => deleteObject(item));
-                    return Promise.all(deletePromises);
-                })
-                .catch((error) => {
-                    console.error("Error deleting files from item_images/:", error);
-                });
-
-
+                localStorage.removeItem('uniqueFolder');
                 localStorage.removeItem('category');
                 localStorage.removeItem('rankingTitle');
                 localStorage.removeItem('description');
