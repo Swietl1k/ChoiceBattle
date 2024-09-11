@@ -4,14 +4,19 @@ import { useNavigate} from 'react-router-dom';
 import axios from "axios";
 import "./CreateSecondPage.css";
 import { ImCross } from "react-icons/im";
+import { ref,listAll, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import { imageStorage } from "../components/configFirebase";
 
 function CreateSecondPage() {
 
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
 
     const [itemTitle, setItemTitle] = useState('');
     const [itemImage, setItemImage] = useState<File | null>(null);
     const [imageUploaded, setImageUploaded] = useState(false);
-    const [items, setItems] = useState<{ itemTitle: string, itemImage: File | null }[]>([]);
+    const [firebaseItemImageURL, setFirebaseItemImageURL] = useState<string | null>(null);
+    const [firebaseItemImageRef, setFirebaseItemImageRef] = useState<string | null>(null);
+    const [items, setItems] = useState<{ itemTitle: string, firebaseItemImageURL: string | null }[]>([]);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalImage, setModalImage] = useState<string | null>(null);
@@ -23,12 +28,59 @@ function CreateSecondPage() {
         localStorage.setItem('itemCount', items.length.toString());
     }, [items]);
 
-    // Funkcja do obsługi zmiany obrazu
+    const fetchItemsFromFirebase = () => {
+        const listRef = ref(imageStorage, 'item_images/');
+
+        listAll(listRef)
+            .then((response) => {
+                const promises = response.items.map((itemRef) => 
+                    getDownloadURL(itemRef).then((url) => {
+                        // Tutaj dzielimy nazwę pliku na podstawie "_", aby usunąć losową część
+                        const nameWithoutExtension = itemRef.name.split('.')[0];  // Usuwamy rozszerzenie
+                        const cleanTitle = nameWithoutExtension.split('_')[1];  // Usuwamy część losową po tytule
+
+                        return {
+                            itemTitle: cleanTitle,
+                            firebaseItemImageURL: url,
+                            firebaseItemImageRef: itemRef.fullPath
+                        };
+                    })
+                );
+
+                Promise.all(promises).then((itemsFromFirebase) => {
+                    setItems(itemsFromFirebase); // Dodanie elementów do listy
+                });
+            })
+            .catch((error) => {
+                console.error("Error fetching items from Firebase:", error);
+            });
+    };
+
+    useEffect(() => {
+        fetchItemsFromFirebase(); // Pobierz elementy z Firebase przy załadowaniu komponentu
+    }, []);
+
+
+    useEffect(() => {
+        const savedImageURL = localStorage.getItem('firebaseItemImageURL');
+        const savedImageRef = localStorage.getItem('firebaseItemImageRef');
+
+        if (savedImageURL) {
+            setFirebaseItemImageURL(savedImageURL);
+            setImageUploaded(true);
+        } else {
+            setImageUploaded(false); 
+        }
+
+        if (savedImageRef) setFirebaseItemImageRef(savedImageRef);
+    }, []);
+
+ 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
             setItemImage(file);
-            setImageUploaded(true);
+            setPreviewImage(URL.createObjectURL(file)); // Tworzenie podglądu lokalnego
         } else {
             alert('Please upload an image in JPEG or PNG format.');
         }
@@ -36,11 +88,11 @@ function CreateSecondPage() {
 
     // Funkcja do usuwania obrazu
     const handleImageRemove = () => {
-        setItemImage(null);
-        setImageUploaded(false);
+        setItemImage(null); 
+        setPreviewImage(null);
     };
 
-    // Funkcja do dodawania elementu do listy
+
     const handleAddItem = () => {
         if (items.length >= 32) {
             alert('You cannot add more than 32 items.');
@@ -48,22 +100,39 @@ function CreateSecondPage() {
         }
 
         if (itemTitle && itemImage) {
-            setItems([...items, { itemTitle, itemImage }]);
-            setItemTitle('');
-            setItemImage(null);
-            setImageUploaded(false);
+            const imageRef = ref(imageStorage, `item_images/${Date.now()}_${itemTitle}.${itemImage.name.split('.').pop()}`);
+            uploadBytes(imageRef, itemImage)
+                .then(() => {
+                    getDownloadURL(imageRef).then((url) => {
+                        const newItem = {
+                            itemTitle,
+                            firebaseItemImageURL: url,
+                            firebaseItemImageRef: imageRef.fullPath
+                        };
+                        setItems([...items, newItem]); // Dodajemy do listy
+                        setItemTitle(''); // Reset tytułu
+                        setItemImage(null); // Reset obrazu lokalnie
+                    });
+                })
+                .catch((error) => {
+                    console.error("Upload failed:", error);
+                });
         } else {
             alert('Please fill in the title and upload an image before adding.');
         }
     };
 
     // Funkcja do obsługi kliknięcia na obraz (otwieranie modala)
-    const handleImageClick = (itemImage: File | null) => {
-        if (itemImage) {
-            const objectURL = URL.createObjectURL(itemImage);  // Tylko jeśli itemImage nie jest null
+    const handleImageClick = (itemImage: string | File | null) => {
+        if (itemImage instanceof File) { 
+            // Jeśli to lokalny plik, twórz URL
+            const objectURL = URL.createObjectURL(itemImage);
             setModalImage(objectURL);
-            setIsModalOpen(true);
+        } else if (typeof itemImage === 'string') {
+            // Jeśli to URL (np. z Firebase), użyj go bezpośrednio
+            setModalImage(itemImage);
         }
+        setIsModalOpen(true);
     };
 
     // Funkcja do zamykania modala
@@ -74,23 +143,28 @@ function CreateSecondPage() {
 
     // Funkcja do usuwania elementu z listy
     const handleRemoveItem = (index: number) => {
-        const updatedItems = items.filter((_, i) => i !== index);
-        setItems(updatedItems);
-    };
+        const itemToRemove = items[index];
 
-    // Funkcja do konwersji pliku na base64
-    const convertToBase64 = (file: File): Promise<string | null> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.onerror = () => reject(null);
-            reader.readAsDataURL(file);
-        });
+        if (itemToRemove.firebaseItemImageRef) {
+
+            const fileRef = ref(imageStorage, itemToRemove.firebaseItemImageRef);
+
+            deleteObject(fileRef)
+                .then(() => {
+                    const updatedItems = items.filter((_, i) => i !== index);
+                    setItems(updatedItems); // Usuwamy z listy po usunięciu z Firebase
+                })
+                .catch((error) => {
+                    console.error("Error deleting the file:", error);
+                });
+        }else {
+            console.error("No valid firebaseItemImageRef for the item at index", index);
+        }
     };
 
     // Funkcja do zakończenia tworzenia rankingu
     const handleFinish = async () => {
-        if (![0,1,8, 16, 32].includes(items.length)) {
+        if (![8, 16, 32].includes(items.length)) {
             alert("You must add exactly 8, 16, or 32 items.");
             return;
         }
@@ -103,27 +177,18 @@ function CreateSecondPage() {
                 return;
             } 
 
-            // Konwersja obrazów elementów na base64
-            const choices_data = await Promise.all(
-                items.map(async item => {
-                    const imageBase64 = item.itemImage
-                        ? await convertToBase64(item.itemImage)
-                        : null;
-
-                    return {
-                        title: item.itemTitle,
-                        image_url: imageBase64,
-                        pick_count: 0,
-                        win_count: 0
-                    };
-                })
-            );
+            const choices_data = items.map(item => ({
+                title: item.itemTitle,
+                image_url: item.firebaseItemImageURL,
+                pick_count: 0,
+                win_count: 0
+            }));
 
             const requestBody = {
                 title: localStorage.getItem('rankingTitle'),
                 category: localStorage.getItem('category'),
                 description: localStorage.getItem('description'),
-                main_image_url: localStorage.getItem('savedImage'),
+                main_image_url: localStorage.getItem('firebaseImageURL'),
                 choices_data: choices_data
             };
 
@@ -176,7 +241,7 @@ function CreateSecondPage() {
                                 placeholder="Enter item title"
                             />
                         </div>
-                        {!imageUploaded && (
+                        {!itemImage && (
                             <div className="input file-input-container-second">
                                 <label htmlFor="file-upload-second" className="file-upload-label-second">
                                     Click to upload image
@@ -190,9 +255,9 @@ function CreateSecondPage() {
                                 />
                             </div>
                         )}
-                        {imageUploaded && itemImage && (
+                        {itemImage && previewImage && (
                             <div className="image-and-button-second">
-                                <img src={URL.createObjectURL(itemImage)} alt="Preview" className="image-preview-second" />
+                                <img src={previewImage} alt="Preview" className="image-preview-second" />
                                 <button className="remove-button-second" onClick={handleImageRemove}>
                                     Remove Image
                                 </button>
@@ -209,14 +274,16 @@ function CreateSecondPage() {
                     <div className="items-container">
                         {items.map((item, index) => (
                             <div key={index} className="item-title-image-remove">
-                                {item.itemImage && (
+                                {item.firebaseItemImageURL ? (
                                     <img
-                                        src={URL.createObjectURL(item.itemImage)}
+                                        src={item.firebaseItemImageURL}
                                         alt="Item Preview"
                                         className="item-image"
-                                        onClick={() => handleImageClick(item.itemImage)}
+                                        onClick={() => handleImageClick(item.firebaseItemImageURL)}
                                         style={{ cursor: 'pointer' }}
                                     />
+                                ) : (
+                                    <p>No image available</p>
                                 )}
                                 <p className="item-title"><strong>{item.itemTitle}</strong></p>
                                 <button
@@ -230,7 +297,7 @@ function CreateSecondPage() {
                     </div>
                 </div>
             </div>
-            {isModalOpen && (
+            {isModalOpen && modalImage && (
                 <div className="modal" onClick={closeModal}>
                     <span className="close">&times;</span>
                     <img className="modal-content" src={modalImage!} alt="Full size" />
