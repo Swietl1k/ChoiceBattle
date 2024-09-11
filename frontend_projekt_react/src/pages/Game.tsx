@@ -6,29 +6,32 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 type gameOptions = {
-  id: number;
-  image: string;
-  title: string;
+  img1_url: string;
+  img2_url: string;
+  img1_title: string;
+  img2_title: string;
+  current_round: number;
+  number_of_choices: number;
 };
 
 function Game() {
   const location = useLocation();
   const { game } = location.state;
 
-  const [gameData, setGameData] = useState<gameOptions[]>([]);
+  const [gameData, setGameData] = useState<gameOptions | null>(null);
   const [loading, setLoading] = useState(false);
 
   const fetchAPI = async () => {
     setLoading(true);
     try {
-      // const response = await axios.get(
-      //   `http://127.0.0.1:8080/api/games/${game.id}/play`
-      // );
       const response = await axios.get(
-        `http://127.0.0.1:8083/api/games/1/options`
+        `https://127.0.0.1:8000/strona/play_end_get/${game.id}/`, 
+        {
+          withCredentials: true
+        }
       );
-      console.log(response.data.options);
-      setGameData(response.data.options);
+      setGameData(response.data);
+      console.log(gameData);
     } catch (error) {
       console.error("Error fetching game data:", error);
     } finally {
@@ -40,14 +43,16 @@ function Game() {
     fetchAPI();
   }, []);
 
-  const handleOptionChoice = async (gameOption: gameOptions) => {
-    console.log(`Option clicked: ${gameOption.id}`);
+  const handleOptionChoice = async (winner: String) => {
     setLoading(true);
     try {
-      const response = await axios.post(
-        "http://127.0.0.1:8084/api/games/option",
+      await axios.post(
+        `https://127.0.0.1:8000/strona/play_end_post/${game.id}/`,
         {
-          optionId: gameOption.id,
+          winner: winner,
+        },
+        {
+          withCredentials: true
         }
       );
 
@@ -68,21 +73,21 @@ function Game() {
           <div className="loading">Loading...</div>
         ) : (
           <>
-            <div className="game-round">Rounds of 8 1/4</div>
+            <div className="game-round">{gameData?.current_round} / {gameData?.number_of_choices}</div>
             <div className="grid-container game-grid-container">
               <div
                 className="box game-box"
-                onClick={() => handleOptionChoice(gameData[0])}
+                onClick={() => handleOptionChoice("img1")}
               >
                 <div className="game-image-box game-left-image">
-                  {gameData[0] && (
+                  {gameData && (
                     <>
                       <img
-                        src={gameData[0].image}
+                        src={gameData.img1_url}
                         alt=""
                         className="game-image"
                       />
-                      <h2 className="game-box-title">{gameData[0].title}</h2>
+                      <h2 className="game-box-title">{gameData.img1_title}</h2>
                     </>
                   )}
                 </div>
@@ -93,17 +98,17 @@ function Game() {
               </div>
               <div
                 className="box game-box"
-                onClick={() => handleOptionChoice(gameData[1])}
+                onClick={() => handleOptionChoice("img2")}
               >
                 <div className="game-image-box game-right-image">
-                  {gameData[1] && (
+                  {gameData && (
                     <>
                       <img
-                        src={gameData[1].image}
+                        src={gameData.img2_url}
                         alt=""
                         className="game-image"
                       />
-                      <h2 className="game-box-title">{gameData[1].title}</h2>
+                      <h2 className="game-box-title">{gameData.img2_title}</h2>
                     </>
                   )}
                 </div>

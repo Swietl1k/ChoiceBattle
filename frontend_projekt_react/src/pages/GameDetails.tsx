@@ -7,8 +7,8 @@ import Navbar from "../components/Navbar";
 type GameDetails = {
   id: number;
   title: string;
-  championshipRate: number;
-  winRate: number;
+  championship_rate: number;
+  win_rate: number;
   image: string;
 };
  
@@ -98,10 +98,17 @@ function GameDetails() {
 
 
 
-  const handlePlayClick = () => {
+  const handlePlayClick = async () => {
     navigate(`/${game.category}/${game.id}/play`, {
       state: { game },
     });
+
+    try{
+      await axios.get(
+        `https://127.0.0.1:8000/strona/start_game/${game.id}/`, {withCredentials: true});
+    } catch(error) {
+      console.log("Error POST play button: ", error);
+    }
   };
  
   return (
@@ -133,12 +140,12 @@ function GameDetails() {
                   <div
                     className="progress-bar champion-progress"
                     role="progressbar"
-                    style={{ width: `${pretendent.championshipRate}%` }}
-                    aria-valuenow={pretendent.championshipRate}
+                    style={{ width: `${pretendent.championship_rate}%` }}
+                    aria-valuenow={pretendent.championship_rate}
                     aria-valuemin={0}
                     aria-valuemax={100}
                   >
-                    {pretendent.championshipRate}%
+                    {pretendent.championship_rate}%
                   </div>
                 </div>
  
@@ -148,12 +155,12 @@ function GameDetails() {
                   <div
                     className="progress-bar win-progress"
                     role="progressbar"
-                    style={{ width: `${pretendent.winRate}%` }}
-                    aria-valuenow={pretendent.winRate}
+                    style={{ width: `${pretendent.win_rate}%` }}
+                    aria-valuenow={pretendent.win_rate}
                     aria-valuemin={0}
                     aria-valuemax={100}
                   >
-                    {pretendent.winRate}%
+                    {pretendent.win_rate}%
                   </div>
                 </div>
               </div>
