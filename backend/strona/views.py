@@ -1,4 +1,4 @@
-import time, os 
+import time, os, math 
 import firebase_admin.auth
 import pyrebase
 import random, string
@@ -67,7 +67,7 @@ def get_new_id_token(request):
         "id_token": result.get("idToken"),
     }, status=status.HTTP_200_OK)
 
-    response.set_cookie("refresh_token", value=result.get("refreshToken"), max_age=3600, path="/", secure=True, httponly=True, samesite='None')
+    response.set_cookie("refresh_token", value=result.get("refreshToken"), max_age=7200, path="/", secure=True, httponly=True, samesite='None')
 
     return response
 
@@ -108,7 +108,7 @@ def logout(request):
         print("Exception: ", e)
 
         message = e.args[0]
-
+    
         return Response({
             "success": False,
             "message": f"LOGOUT ERROR -> {message}"
@@ -118,11 +118,16 @@ def logout(request):
     #request.session.pop("user_id", None)
     #request.session.pop("user_email", None)
     #request.session.pop("user_name", None)
-        
-    return Response({
+
+    response = Response({
         "success": True,
         "message": "LOGGED OUT SUCCESSFULLY"
     }, status=status.HTTP_200_OK)
+
+    #response.set_cookie("refresh_token", value='', expires=0, secure=True, httponly=True, samesite='None')
+    response.delete_cookie("refresh_token", path='/', samesite='None')
+
+    return response
 
     
 
@@ -171,7 +176,7 @@ def register(request):
             "expires_in": expires_in
         }, status=status.HTTP_200_OK)
 
-        response.set_cookie("refresh_token", value=refresh_token, max_age=3600, path="/", secure=True, httponly=True, samesite='None')
+        response.set_cookie("refresh_token", value=refresh_token, max_age=7200, path="/", secure=True, httponly=True, samesite='None')
 
         return response
     
@@ -285,27 +290,29 @@ def create(request):
     fetching request_body (json string) from client request and convert it to dict; 
     request_body structure: 
     {
-        "title": <string: example>, 
-        "category": <string: example>, 
-        "number_of_choices": <int: example>, 
-        "description": <string: example>, 
+        "title": <string: example>,
+        "category": <string: example>,
+        "number_of_choices": <int: example>,
+        "description": <string: example>,
         "main_image_url": <string: example>,
         "choices_data": [{
-                            "title": <string: example>, 
+                            "title": <string: example>,
                             "image_url": <string: example>,
-                            "pick_count": <int: example>, 
+                            "pick_count": <int: example>,
                             "win_count": <int: example>,
+                            "championship_rate": <int: example>,
                         },
                         {
-                            "title": <string: example>, 
+                            "title": <string: example>,
                             "image_url": <string: example>,
-                            "pick_count": <int: example>, 
-                            "win_count": <int: example>,                        
+                            "pick_count": <int: example>,
+                            "win_count": <int: example>,    
+                            "championship_rate": <int: example>,                    
                         }]
     }
     '''
     
-    request_body = json.loads(request.data) # json string to dict conversion
+    request_body = request.data # json string to dict conversion
     
     game_id = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
     poland_time = datetime.now(ZoneInfo("Europe/Warsaw"))
@@ -313,7 +320,7 @@ def create(request):
     user_id = getattr(request, "user_id", None) 
     play_count = 0
 
-    request_body.upadate({
+    request_body.update({
             "date": formatted_time,
             "user_id": user_id,
             "play_count": play_count
@@ -485,10 +492,12 @@ def start_game(request, game_id):
 
 @api_view(['GET'])
 def play_end_get(request, game_id):
-    username = request.session.get('user_name')
+    #username = request.session.get('user_name')
     game_data = db.child("games").child(game_id).get().val()
     number_of_choices = int(game_data["number_of_choices"])
     storage = firebase.storage()
+    
+    print(request.session.get(f'is_game_start_{game_id}', False))
 
     if request.session.get(f'is_game_start_{game_id}', False):
         request.session.pop(f'current_round_{game_id}', None) 
@@ -515,21 +524,30 @@ def play_end_get(request, game_id):
         winning_number = winner_list[0]
         win_count = db.child("games").child(game_id).child("choice_data").child(winning_number).child("win_count").get().val()
         win_count += 1
-        db.child("games").child(game_id).child("choice_data").child(winning_number).child("win_count").set(win_count) 
-
+        db.child("games").child(game_id).child("choice_data").child(winning_number).child("win_count").set(win_count)
+         
         play_count = db.child("games").child(game_id).child("play_count").get().val()
         play_count += 1
-        db.child("games").child(game_id).child("play_count").set(play_count) 
-
-        request.session.pop(f'current_round_{game_id}', None) 
+        db.child("games").child(game_id).child("play_count").set(play_count)
+ 
+        champ_rate = (win_count / play_count) * 100
+        rounded_champ_rate = math.ceil(champ_rate)
+        db.child("games").child(game_id).child("choice_data").child(winning_number).child("championship_rate").set(rounded_champ_rate)
+ 
+ 
+        request.session.pop(f'current_round_{game_id}', None)
         request.session.pop(f'current_stage_{game_id}', None)
-        request.session.pop(f'img1_number_{game_id}', None) 
-        request.session.pop(f'img2_number_{game_id}', None) 
-        request.session.pop(f'img_list_{game_id}', None) 
+        request.session.pop(f'img1_number_{game_id}', None)
+        request.session.pop(f'img2_number_{game_id}', None)
+        request.session.pop(f'img_list_{game_id}', None)
         for i in range(5):
             request.session.pop(f'stage_{i}_winner_{game_id}', None)
 
-        return redirect('show_game', game_id=game_id)
+        update_win_rates(game_id)
+
+        return Response({
+            "end": True
+        })
         
     stage_mapping = {
         (8, 4): 1,
@@ -583,24 +601,23 @@ def play_end_get(request, game_id):
         request.session[f'img2_number_{game_id}'] = img2_number
         request.session[f'img_list_{game_id}'] = img_list
         
-    file_path1 = 'images/' + game_id + f'/{img1_number}.png'
-    file_path2 = 'images/' + game_id + f'/{img2_number}.png'
-    img1 = storage.child(file_path1).get_url(None)
-    img2 = storage.child(file_path2).get_url(None)
+    #file_path1 = 'images/' + game_id + f'/{img1_number}.png'
+    #file_path2 = 'images/' + game_id + f'/{img2_number}.png'
+    #img1 = storage.child(file_path1).get_url(None)
+    #img2 = storage.child(file_path2).get_url(None)
+    img1 = db.child("games").child(game_id).child("choice_data").child(img1_number).child("image_url").get().val()
+    img2 = db.child("games").child(game_id).child("choice_data").child(img2_number).child("image_url").get().val()
+    
     title1 = db.child("games").child(game_id).child("choice_data").child(img1_number).child("title").get().val()
     title2 = db.child("games").child(game_id).child("choice_data").child(img2_number).child("title").get().val()
-    
-
-
-    response_data = {
-        'user_name': username, 
-        #'current_stage': ,
+ 
+    response_data = { 
+        'current_round': current_round + 1,
+        "number_of_choices": number_of_choices - 1,
         'img1_url': img1, 
         'img2_url': img2, 
         'img1_title': title1, 
         'img2_title': title2, 
-        'game_id': game_id,
-        'game_data': game_data, 
     }
 
     return JsonResponse(response_data)
@@ -608,21 +625,30 @@ def play_end_get(request, game_id):
 
 @api_view(['POST'])
 def play_end_post(request, game_id):
-    #action = request.POST.get('action')
     request_body = request.data
     action = request_body.get("winner")
     print(request_body)
     print(action)
+    img1_nr = request.session.get(f'img1_number_{game_id}', None)
+    img2_nr = request.session.get(f'img2_number_{game_id}', None)
+    shown_in_pair_1 = db.child("games").child(game_id).child("choice_data").child(img1_nr).child("shown_in_pair").get().val()
+    shown_in_pair_2 = db.child("games").child(game_id).child("choice_data").child(img2_nr).child("shown_in_pair").get().val()
+    shown_in_pair_1 += 1
+    shown_in_pair_2 += 1
+    db.child("games").child(game_id).child("choice_data").child(img1_nr).child("shown_in_pair").set(shown_in_pair_1)
+    db.child("games").child(game_id).child("choice_data").child(img2_nr).child("shown_in_pair").set(shown_in_pair_2)
 
 
-    if action == 'button_img1':
-        winner = request.session.get(f'img1_number_{game_id}', None)
+    if action == 'img1':
+        winner = img1_nr
         current_round = request.session.get(f'current_round_{game_id}', 0)
         current_stage = request.session.get(f'current_stage_{game_id}', 0)
 
         winner_list = request.session.get(f'stage_{current_stage}_winner_{game_id}', [])
         winner_list.append(winner)
         request.session[f'stage_{current_stage}_winner_{game_id}'] = winner_list
+
+        print("winner:", winner)
 
         pick_count = db.child("games").child(game_id).child("choice_data").child(winner).child("pick_count").get().val()
         pick_count += 1
@@ -641,8 +667,8 @@ def play_end_post(request, game_id):
         )
         #return redirect('play', game_id=game_id)
     
-    if action == 'button_img2':
-        winner = request.session.get(f'img2_number_{game_id}', None)
+    if action == 'img2':
+        winner = img2_nr
         current_round = request.session.get(f'current_round_{game_id}', 0)
         current_stage = request.session.get(f'current_stage_{game_id}', 0)
 
@@ -668,6 +694,32 @@ def play_end_post(request, game_id):
         #return redirect('play', game_id=game_id)
 
 
+def update_win_rates(game_id):
+    game_data = db.child("games").child(game_id).get().val()
+ 
+    if not game_data:
+        print(f"No game data found for game_id: {game_id}")
+        return
+ 
+    choice_data = game_data.get('choice_data', [])
+    play_count = game_data.get('play_count', 0)
+ 
+    for choice in choice_data:
+        win_count = choice.get('win_count', 0)
+        pick_count = choice.get('pick_count', 0)
+        shown_in_pair = choice.get('shown_in_pair', 0)
+       
+        if pick_count > 0:
+            championship_rate = math.ceil((win_count * 100) / play_count)
+            win_rate = math.ceil((pick_count * 100) / shown_in_pair)
+        else:
+            championship_rate = 0  
+            win_rate = 0  
+ 
+        choice['championship_rate'] = championship_rate
+        choice['win_rate'] = win_rate
+ 
+    db.child("games").child(game_id).update({"choice_data": choice_data})
 
 
 
