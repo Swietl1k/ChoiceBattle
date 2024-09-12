@@ -57,7 +57,13 @@ function App() {
         return;
       }
 
-      const expiresAtNumber = Number(expiresAt); 
+      const expiresAtNumber = parseInt(expiresAt, 10); 
+      if (isNaN(expiresAtNumber)) {
+        console.error("Invalid expires_at value");
+        refreshAccessToken();
+        return;
+      }
+
       const currentTime = Date.now();
 
       console.log("Expires at:", new Date(expiresAtNumber).toLocaleTimeString());
