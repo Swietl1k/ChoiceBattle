@@ -19,7 +19,7 @@ from .functions import update_win_rates
  
 
 BASE_DIR = Path(__file__).resolve().parent
-path_key = os.path.join(BASE_DIR, 'stronaww123-firebase-adminsdk-i25oq-82ae8cdb50.json')
+path_key = os.path.join(BASE_DIR, 'stronaww123-firebase-adminsdk-i25oq-ed793f0597.json')
 
 cred = firebase_admin.credentials.Certificate(path_key)
 firebase_admin.initialize_app(cred)
