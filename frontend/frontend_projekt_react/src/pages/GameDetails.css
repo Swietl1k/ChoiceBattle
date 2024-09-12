@@ -199,3 +199,11 @@
     margin-top: 4px;
 }
 
+.pretendent-progress span{
+    color: white;
+}
+
+.progress-bar{
+    color: black !important;
+    font-weight: bold;
+}

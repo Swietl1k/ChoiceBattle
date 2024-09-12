@@ -28,8 +28,7 @@ function Navbar({onSearchTerm }: Props) {
   }, []);
 
   const items = [
-    { name: "Home", path: "/" },
-    { name: "Highlights", path: "/highlights" },
+    { name: "Home", path: "/" }
   ];
 
   if (username) {
@@ -53,7 +52,7 @@ function Navbar({onSearchTerm }: Props) {
         await axios.post('https://127.0.0.1:8000/strona/logout/', {}, {
           headers: {
             Authorization: `Bearer ${idToken}`
-          }
+          }, withCredentials: true
         });
     
         localStorage.removeItem('id_token');
@@ -81,7 +80,7 @@ function Navbar({onSearchTerm }: Props) {
           <img
             src={logo}
             className="d-inline-block align-text-top"
-            style={{ height: "80px" }}
+            style={{ height: "150px" }}
             alt="logo"
           />
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">

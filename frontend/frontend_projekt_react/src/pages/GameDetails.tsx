@@ -99,14 +99,19 @@ function GameDetails() {
 
 
   const handlePlayClick = async () => {
-    navigate(`/${game.category}/${game.id}/play`, {
-      state: { game },
-    });
-
-    try{
+    try {
+      // Czekaj na zakończenie zapytania HTTP
       await axios.get(
-        `https://127.0.0.1:8000/strona/start_game/${game.id}/`, {withCredentials: true});
-    } catch(error) {
+        `https://127.0.0.1:8000/strona/start_game/${game.id}/`, 
+        { withCredentials: true }
+      );
+      
+      // Dopiero po zakończeniu zapytania wykonaj nawigację
+      navigate(`/${game.category}/${game.id}/play`, {
+        state: { game },
+      });
+
+    } catch (error) {
       console.log("Error POST play button: ", error);
     }
   };
@@ -119,7 +124,7 @@ function GameDetails() {
           <img className="details-img" src={game.image} alt="" />
           <h1 className="details-title">{game.title}</h1>
           <span className="details-description">{game.description}</span>
-          <h3 className="details-creator">{game.creator}</h3>
+          <h3 className="details-creator">Created by: {game.creator}</h3>
           <button className="details-button" onClick={handlePlayClick}>
             {" "}
             <span className="details-span-play">Play</span>

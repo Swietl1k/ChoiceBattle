@@ -193,19 +193,23 @@ function CreateSecondPage() {
                 return;
             } 
 
-            const choices_data = items.map(item => ({
+            const choice_data = items.map(item => ({
                 title: item.itemTitle,
                 image_url: item.firebaseItemImageURL,
                 pick_count: 0,
-                win_count: 0
+                win_count: 0,
+                championship_rate: 0,
+                win_rate: 0,
+                shown_in_pair: 0
             }));
 
             const requestBody = {
                 title: localStorage.getItem('rankingTitle'),
                 category: localStorage.getItem('category'),
                 description: localStorage.getItem('description'),
+                number_of_choices: items.length,
                 main_image_url: localStorage.getItem('firebaseImageURL'),
-                choices_data: choices_data
+                choice_data: choice_data
             };
 
             const response = await axios.post('https://127.0.0.1:8000/strona/create/', requestBody, {
@@ -224,6 +228,9 @@ function CreateSecondPage() {
                 localStorage.removeItem('description');
                 localStorage.removeItem('savedImage');
                 localStorage.removeItem('itemCount');
+                localStorage.removeItem('firebaseImageURL');
+                localStorage.removeItem('imageUploaded');
+                localStorage.removeItem('firebaseImageRef');
                 navigate('/');
 
             } else {
@@ -287,7 +294,7 @@ function CreateSecondPage() {
                     </div>
                 </div>
                 <div className="right-container-second">
-                    <h2>Items List:</h2>
+                    <h2>Items List: ({items.length} elements)</h2>
                     <div className="items-container">
                         {items.map((item, index) => (
                             <div key={index} className="item-title-image-remove">

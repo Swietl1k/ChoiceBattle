@@ -70,17 +70,18 @@ function Game() {
         setWinnerTitle(gameData.img2_title);
       }
 
-      if (gameData?.current_round < gameData?.number_of_choices) {
-        fetchAPI();
+      if (gameData?.current_round < (gameData?.number_of_choices)) {
+        await fetchAPI();
       } else {
         setOpenModel(true);
         setLoading(true);
+        await fetchAPI();
       }
 
     } catch (error) {
       console.error("Error sending option choice to backend:", error);
     } finally {
-      if (gameData.current_round < gameData.number_of_choices) {
+      if (gameData.current_round < (gameData.number_of_choices)) {
         setLoading(false);
       }
     }
