@@ -1,0 +1,66 @@
+.model_background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); 
+    display: flex;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.model_container {
+    margin-top: 20vh;
+    background-color: #585858;
+    padding: 20px;
+    border-radius: 10px;
+    width: 25vw;
+    height: 65vh;
+    box-shadow: 0 0 15px rgba(0, 252, 21, 0.3);
+    position: relative;
+    text-align: center;
+}
+
+.model_header {
+    position: relative;
+    margin-bottom: 2vh;
+}
+
+.model_close_btn {
+    position: absolute;
+    top: -10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: black;
+    margin-bottom: 20px;
+}
+
+.model_close_btn:hover {
+    color: white; 
+}
+
+.model_title {
+    font-size: 1.9rem;
+    font-weight: bold;
+    text-align: center;
+    color: white;
+}
+.model_winner {
+    width: 95%;
+    height: 40vh;
+    border-radius: 10px;
+    margin: 0 auto;
+}
+.model_winner_img{
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    margin: auto;
+}
+.model_spacer{
+    height: 4vh !important;
+}

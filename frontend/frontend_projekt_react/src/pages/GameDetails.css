@@ -1,0 +1,209 @@
+.gameDetails-grid-container{
+    margin-left: 10vw;
+    margin-right: 10vw;
+    margin-top: 5vh;
+    display: grid;
+    grid-template-columns:1.2fr 1.1fr 1fr;
+}
+
+.middle-box{
+    margin-left: 3vw;
+    margin-right: 3vw;
+    max-height: 80vh;
+    overflow-y: hidden !important;
+    padding-right: 10px;
+    flex-direction: column;
+}
+.middle-box:hover{
+    overflow-y: auto !important;
+}
+
+.middle-box::-webkit-scrollbar {
+    width: 8px; /* Szerokość paska przewijania */
+}
+
+.middle-box::-webkit-scrollbar-thumb {
+    background-color: #888; /* Kolor paska przewijania */
+    border-radius: 10px;
+}
+
+.middle-box::-webkit-scrollbar-thumb:hover {
+    background-color: #555; /* Kolor paska przewijania po najechaniu */
+}
+
+.right-box{
+    background-color: rgb(245, 245, 245);
+    border-radius: 10px;
+    height: fit-content;
+    max-height: 80vh;
+    overflow-y: auto !important;
+}
+
+
+.gameDetails-box{
+    /* border: 1px solid red; */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.details-img{
+    height: auto;
+    width: auto;
+    object-position: center;
+    object-fit: cover;
+    border: 3px solid white;
+    border-radius: 15px;
+    max-height: 40vh;
+    max-width: 85%;
+}
+
+.details-title{
+    color: white;
+    font-weight: bold;
+    margin-top: 6%;
+    margin-bottom: 6%;
+}
+
+.details-description{
+    color: rgb(168, 168, 168);
+}
+
+.details-creator{
+    margin-top: 6%;
+    margin-bottom: 6%;
+    color: white;
+}
+
+.details-button{
+    display: inline-block;
+    border-radius: 4px;
+    background-color: green;
+    color: white;
+    text-align: center;
+    font-size: 2.3em;
+    padding: 20px;
+    width: 60%;
+    transition: all 0.5s;
+    cursor: pointer;
+    margin: 5px;
+    border: 0;
+}
+
+.details-button span {
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    transition: 0.5s;
+}
+
+.details-button .details-span-play:after {
+    content: '\00bb';
+    position: absolute;
+    opacity: 0;
+    top: 0;
+    right: -20px;
+    transition: 0.5s;
+}
+
+.details-button:hover .details-span-play {
+    padding-right: 25px;
+}
+
+.details-button:hover .details-span-play:after {
+    opacity: 1;
+    right: 0;
+}
+
+.pretendent{
+    width: 20vw;
+    text-align: left;
+    margin-bottom: 8vh;
+    display: block;
+}
+
+.pretendent-title{
+    color: rgb(255, 255, 255);
+}
+
+.pretendent-image{
+    width: 35%;
+    height: 13vh;
+    float: left;
+    margin-right: 10px;
+}
+
+
+.champion-progress{
+    background-color: rgb(0, 184, 0) !important;
+}
+
+
+.win-progress{
+    background-color: rgb(0, 100, 0) !important;
+}
+
+.comment-list{
+    background-color: rgb(236, 236, 236);
+    padding: 10px;
+    border: 1px solid grey;
+    border-radius: 15px;
+    margin-bottom: 1%;
+    margin-left: 1%;
+    margin-right: 1%;
+}
+
+.comment-box{
+    background-color: rgb(236, 236, 236);
+    padding: 10px;
+    border: 1px solid grey;
+    border-radius: 15px;
+    margin: 1%;
+}
+
+.comment-list:first-child{ 
+    margin-top: 1%; 
+}
+
+.comment-username{
+    text-align: left;
+    font-size: 2vh;
+}
+
+.comment-body{
+    text-align: left;
+    margin-top: 5px;
+    font-size: 1.7vh;
+}
+
+.comment-textarea{
+    background-color: white;
+    border: 1px grey solid;
+    width: 100%;
+    height: 80px;
+    color: black;
+}
+
+.comment-textarea:focus{
+    outline:none;
+}
+
+.commnet-button{
+    color: black;
+    background-color: rgb(170, 170, 170);
+    border: 1px solid black;
+    cursor: pointer;
+    border-radius: 2px;
+    display: block;
+    margin-top: 4px;
+}
+
+.pretendent-progress span{
+    color: white;
+}
+
+.progress-bar{
+    color: black !important;
+    font-weight: bold;
+}

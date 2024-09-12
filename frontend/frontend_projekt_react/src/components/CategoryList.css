@@ -1,0 +1,19 @@
+.list-group {
+    margin-top: 6vh;
+    margin-left: 10%;
+    width: 22%;
+    max-width: 25vw;
+    border-radius: 35px !important;
+    float: left;
+  }
+
+  .list-group-item {
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 22px !important; 
+    padding: 15px 20px !important; 
+  }
+  
+
+
+  

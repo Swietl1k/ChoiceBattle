@@ -1,0 +1,23 @@
+.navbar{
+    height: 10vh;
+    font-size: 2.5rem; 
+}
+
+.navbar-right{
+    margin-left: 40px !important;
+}
+
+.btn{
+    font-size: 2rem !important ; 
+}
+.form-control{
+    font-size: 2rem !important ; 
+}
+
+.nav-user{
+    margin-right: 1vw;
+    display: flex;
+    align-items: center;
+    gap:0.1vw
+}
+

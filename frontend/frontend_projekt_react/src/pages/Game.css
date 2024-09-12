@@ -1,0 +1,72 @@
+.game-container{
+    margin-top: 6vh;
+    height: 80vh;
+}
+
+.game-grid-container{
+    grid-template-columns:1fr 0.6fr 1fr;
+    display: grid;
+    margin-top: 10vh;
+}
+
+.game-title{
+    color: white;
+    font-weight: bold;
+    font-size: 3.5em;
+}
+
+.game-round{
+    color: white;
+    font-size: 1.3em;
+    background-color: grey;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    width: 10%;
+    display: inline-block; 
+}
+
+.game-versusIcon{
+    height: 15vh;
+}
+.game-box{
+    justify-content: center;
+    align-items: center;
+    height: 30vh;
+    display: flex;
+}
+.game-image-box{
+    width: 25vw;
+    height: 45vh;
+    border: 3px solid white;
+    border-radius: 15px;
+    background-color: rgb(22, 22, 22);
+}
+
+.game-image-box:hover{
+    border: 6px solid white;
+}
+
+.game-image{
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    margin: auto; 
+}
+.game-left-image{
+    margin-left: 10vw;
+}
+.game-right-image{
+    margin-right: 10vw;
+}
+.game-box-title{
+    margin-top: 3vh;
+    color: white;
+}
+
+.loading{
+    color: white;
+    margin-top: 20vh;
+    color: white;
+    font-size: 3em;
+}

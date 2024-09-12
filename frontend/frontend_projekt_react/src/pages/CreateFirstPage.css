@@ -1,0 +1,220 @@
+.main-container {
+    display: flex;
+    justify-content: space-between;
+    height: calc(100vh - 100px); 
+    padding: 3vh;
+}
+
+.left-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-direction: column;
+    background: #C0C0C0;
+    margin: 0vh 3vw 3vh 3vw;
+    width: 50%;
+    height: calc(100vh - 160px);
+    border-radius: 10px;
+}
+
+.right-container {
+    width: 45%; 
+    padding: 3vh;
+    margin: 0vh 6vw 3vh 6vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    word-wrap: break-word; /* Dodanie zawijania tekstu */
+    white-space: normal;
+}
+
+.right-container h2 {
+    font-size: 50px;
+    color: #ffffff;
+    margin-bottom: 20px;
+}
+
+.right-container p {
+    font-size: 1.3vw;
+    color: #ffffff; 
+    margin-bottom: 10px;
+    width: 100%;
+    text-align: center;
+}
+
+.image-preview {
+    margin-top: 3vh;
+    max-width: 34vw;
+    max-height: 40vh;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    object-fit: cover;
+}
+
+.navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.active-button {
+    background-color: #FFD700;
+    font-size: 20px;
+    margin-top: 4vh;
+    margin-left:1vw;
+    padding: 12px 20px; 
+    border-radius: 60%;
+}
+
+.step-two-button {
+    background-color: #3a3a3a;
+    border-radius: 60%;
+    color: white;
+    margin-top: 4vh;
+    margin-right: 1vw;
+    font-size: 20px;
+    padding: 12px 20px;
+}
+
+.lo-header {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 3vh;
+}
+
+.underline {
+    width: 25vw;
+    height: 0.5vh;
+    background: #3a3a3a;
+    border-radius: 10px;
+}
+
+.text {
+    font-size: 48px;
+    font-weight: 700;
+}
+
+.lo-inputs {
+    display: flex;
+    flex-direction: column;
+    margin-top: 1vh;
+    gap:1vh;
+    margin-bottom: 2vh;
+}
+
+.input {
+    display: flex;
+    align-items: center;
+    margin: auto;
+    width: 30vw;
+    height: 10vh;
+    background: #5A5A5A;
+    border-radius: 15px;
+    border: 5px solid #3a3a3a;
+}
+
+.select-input {
+    width: 100%;
+    height: 8vh;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: rgb(0, 0, 0);
+    font-size: 20px;
+    padding-left: 1.5vw;
+    cursor: pointer;
+    appearance: none;
+}
+
+.input input[type="text"] {
+    width: 28vw;
+    height: 8vh;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: rgb(0, 0, 0);
+    font-size: 20px;
+}
+
+
+.lo-submit {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 17vw;
+    height: 7vh;
+    color: white;
+    background: #3a3a3a;
+    border-radius: 50px;
+    font-size: 30px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 0vh;
+}
+
+.lo-submit:hover {
+    background-color: #009860;
+    transform: scale(1.05);
+}
+
+.file-input-container {
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 8vh;
+    background-color: #4A4A4A;
+    border-radius: 10px;
+    border: 2px dashed #3a3a3a;
+}
+
+.file-input-container.image-uploaded {
+    background-color: #009860;
+}
+
+.file-upload-label {
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 1.5vh 0;
+    width: 100%;
+    text-align: center;
+}
+
+.file-input {
+    opacity: 0;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.image-and-button{
+    display: flex;
+    flex-direction: column; 
+    align-items: center; 
+}
+
+.remove-button {
+    margin-top: 2vh;
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 1vh;
+}
+
+.remove-button:hover {
+    background-color: #ff1a1a;
+}

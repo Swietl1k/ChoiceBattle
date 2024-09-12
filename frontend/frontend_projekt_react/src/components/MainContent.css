@@ -1,0 +1,14 @@
+.main-content-container{
+    margin-top: 6vh;
+    margin-left: 5%;
+    width: 50%;
+    float: left;
+}
+
+.card-img-top{
+    max-width: 100% !important;
+    max-height: 60% !important;
+    height: auto !important;
+    width: auto !important;
+    /* object-fit: contain; */
+}
